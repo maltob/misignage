@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/glebarez/sqlite"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/models"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

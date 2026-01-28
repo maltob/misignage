@@ -14,11 +14,11 @@ import (
 	"os"
 
 	"github.com/chromedp/chromedp"
-	"github.com/user/misignage/automation"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/models"
-	"github.com/user/misignage/storage"
-	"github.com/user/misignage/util"
+	"github.com/maltob/misignage/automation"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/models"
+	"github.com/maltob/misignage/storage"
+	"github.com/maltob/misignage/util"
 )
 
 type ProcessingTask struct {

@@ -10,7 +10,7 @@ import (
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
-	"github.com/user/misignage/util"
+	"github.com/maltob/misignage/util"
 )
 
 type BurpEvent struct {

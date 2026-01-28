@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/models"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/models"
 )
 
 func RegisterDisplay(c echo.Context) error {

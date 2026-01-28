@@ -7,13 +7,13 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/models"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
 	"github.com/markbates/goth/providers/microsoftonline"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/models"
 )
 
 func InitOIDC() {

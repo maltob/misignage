@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	"github.com/user/misignage/auth"
+	"github.com/maltob/misignage/auth"
 )
 
 var (

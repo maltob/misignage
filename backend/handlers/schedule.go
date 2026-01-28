@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/models"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/models"
 )
 
 func CreateSchedule(c echo.Context) error {

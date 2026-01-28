@@ -9,11 +9,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/handlers"
-	"github.com/user/misignage/storage"
-	"github.com/user/misignage/util"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/handlers"
+	"github.com/maltob/misignage/storage"
+	"github.com/maltob/misignage/util"
 )
 
 //go:embed all:dist

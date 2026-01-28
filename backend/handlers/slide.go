@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/user/misignage/auth"
-	"github.com/user/misignage/db"
-	"github.com/user/misignage/models"
-	"github.com/user/misignage/storage"
-	"github.com/user/misignage/util"
+	"github.com/maltob/misignage/auth"
+	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/models"
+	"github.com/maltob/misignage/storage"
+	"github.com/maltob/misignage/util"
 )
 
 func CreateSlide(c echo.Context) error {
