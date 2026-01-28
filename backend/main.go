@@ -1,0 +1,137 @@
+package main
+
+import (
+	"embed"
+	"flag"
+	"io/fs"
+	"net/http"
+	"os"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/user/misignage/auth"
+	"github.com/user/misignage/db"
+	"github.com/user/misignage/handlers"
+	"github.com/user/misignage/storage"
+	"github.com/user/misignage/util"
+)
+
+//go:embed all:dist
+var frontendDist embed.FS
+
+func main() {
+	debugFlag := flag.Bool("debug", false, "Enable debug console logging")
+	flag.Parse()
+	util.DebugMode = *debugFlag
+
+	db.InitDB()
+	db.Bootstrap()
+	storage.InitStorage()
+	handlers.InitOIDC()
+	handlers.InitWorker()
+	handlers.ScanAndQueue()
+
+	e := echo.New()
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
+
+	// Public Routes
+	e.POST("/login", handlers.Login)
+	e.POST("/register", handlers.Register)
+	e.POST("/api/displays/register", handlers.RegisterDisplay)
+	e.POST("/api/displays/login", handlers.LoginDisplay)
+	e.GET("/api/displays/:id/status", handlers.GetDisplayStatus)
+
+	// OIDC Routes
+	e.GET("/auth/:provider", handlers.BeginAuth)
+	e.GET("/auth/:provider/callback", handlers.CompleteAuth)
+
+	// API Routes (Protected)
+	api := e.Group("/api")
+	api.Use(auth.JWTMiddleware)
+
+	api.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
+
+	// Dashboard
+	api.GET("/dashboard/stats", handlers.GetDashboardStats)
+
+	// Display Routes
+	api.GET("/displays", handlers.GetDisplays)
+	api.GET("/displays/pending", handlers.GetPendingDisplays)
+	api.POST("/displays/:id/approve", handlers.ApproveDisplay)
+	api.POST("/displays/claim", handlers.ClaimDisplayByCode)
+	api.POST("/displays/:id/command", handlers.SendDisplayCommand)
+	api.POST("/displays/:id/heartbeat", handlers.ReportHeartbeat)
+	api.GET("/displays/:id/content", handlers.GetDisplayContent)
+	api.POST("/displays/:id/screenshot", handlers.UploadDisplayScreenshot)
+	api.DELETE("/displays/:id", handlers.DeleteDisplay)
+	api.PUT("/displays/:id", handlers.UpdateDisplay)
+
+	// Slide Routes
+	api.POST("/slides", handlers.CreateSlide)
+	api.GET("/slides", handlers.GetSlides)
+	api.PUT("/slides/:id", handlers.UpdateSlide)
+	api.DELETE("/slides/:id", handlers.DeleteSlide)
+
+	// Playlist Routes
+	api.POST("/playlists", handlers.CreatePlaylist)
+	api.GET("/playlists", handlers.GetPlaylists)
+	api.DELETE("/playlists/:id", handlers.DeletePlaylist)
+	api.POST("/playlists/:id/slides", handlers.AddSlideToPlaylist)
+	api.PUT("/playlists/:id/slides", handlers.UpdatePlaylistSlides)
+
+	// Schedule Routes
+	api.POST("/schedules", handlers.CreateSchedule)
+	api.GET("/schedules", handlers.GetSchedules)
+	api.PUT("/schedules/:id", handlers.UpdateSchedule)
+	api.DELETE("/schedules/:id", handlers.DeleteSchedule)
+	// Group Routes
+	api.POST("/groups", handlers.CreateGroup)
+	api.GET("/groups", handlers.GetGroups)
+	api.DELETE("/groups/:id", handlers.DeleteGroup)
+	api.POST("/groups/:id/add", handlers.AddToGroup)
+
+	// Storage Management
+	api.GET("/storage", handlers.GetStorageFiles)
+	api.DELETE("/storage/:filename", handlers.DeleteStorageFile)
+	api.POST("/storage/cleanup", handlers.CleanupStorage)
+
+	// User Management
+	api.GET("/users", handlers.GetUsers)
+	api.POST("/users", handlers.CreateUser)
+	api.PUT("/users/:id", handlers.UpdateUser)
+	api.DELETE("/users/:id", handlers.DeleteUser)
+
+	// Settings Management
+	api.GET("/settings/org", handlers.GetOrgSettings)
+	api.PUT("/settings/org", handlers.UpdateOrgSettings)
+	api.PUT("/settings/profile", handlers.UpdateProfile)
+
+	// Real-time
+	e.GET("/ws", handlers.HandleWS)
+	api.GET("/poll", handlers.HandlePoll)
+	api.GET("/logs", handlers.GetSystemLogs)
+
+	// Static files for uploads (must be separate from frontend embed)
+	e.Static("/api/uploads", "uploads")
+
+	// Frontend Embedding
+	distFs, _ := fs.Sub(frontendDist, "dist")
+
+	// Support legacy /player route by redirecting to Hash route
+	e.GET("/player", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/#/player")
+	})
+
+	e.StaticFS("/*", distFs)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	e.Logger.Fatal(e.Start(":" + port))
+}
