@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 interface SystemLog {
     id: number;
@@ -16,6 +17,7 @@ interface SystemLog {
 }
 
 const SystemLogs: React.FC = () => {
+    const { t } = useTranslation();
     const [logs, setLogs] = useState<SystemLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterSource, setFilterSource] = useState('');
@@ -61,11 +63,11 @@ const SystemLogs: React.FC = () => {
                         onChange={(e) => setFilterSource(e.target.value)}
                         className="bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        <option value="">All Sources</option>
-                        <option value="worker">Worker</option>
-                        <option value="burp">Burp</option>
-                        <option value="api">API</option>
-                        <option value="audit">Audit</option>
+                        <option value="">{t('logs.filters.all_sources')}</option>
+                        <option value="worker">{t('logs.filters.worker')}</option>
+                        <option value="burp">{t('logs.filters.burp')}</option>
+                        <option value="api">{t('logs.filters.api')}</option>
+                        <option value="audit">{t('logs.filters.audit')}</option>
                     </select>
 
                     <select
@@ -73,17 +75,17 @@ const SystemLogs: React.FC = () => {
                         onChange={(e) => setFilterLevel(e.target.value)}
                         className="bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        <option value="">All Levels</option>
-                        <option value="info">Info</option>
-                        <option value="debug">Debug</option>
-                        <option value="error">Error</option>
+                        <option value="">{t('logs.filters.all_levels')}</option>
+                        <option value="info">{t('logs.filters.info')}</option>
+                        <option value="debug">{t('logs.filters.debug')}</option>
+                        <option value="error">{t('logs.filters.error')}</option>
                     </select>
                 </div>
 
                 <button
                     onClick={fetchLogs}
                     className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                    title="Refresh Logs"
+                    title={t('logs.refresh_button')}
                 >
                     <svg className={`w-5 h-5 text-slate-400 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -95,12 +97,12 @@ const SystemLogs: React.FC = () => {
                 <table className="w-full text-left">
                     <thead>
                         <tr className="text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-white/5">
-                            <th className="px-4 py-3">Timestamp</th>
-                            {filterSource === 'audit' && <th className="px-4 py-3">Actor</th>}
-                            <th className="px-4 py-3">Source</th>
-                            {filterSource === 'audit' ? <th className="px-4 py-3">Action</th> : <th className="px-4 py-3">Level</th>}
-                            <th className="px-4 py-3">Message</th>
-                            {filterSource !== 'audit' && <th className="px-4 py-3 text-right">Slide</th>}
+                            <th className="px-4 py-3">{t('logs.table.timestamp')}</th>
+                            {filterSource === 'audit' && <th className="px-4 py-3">{t('logs.table.actor')}</th>}
+                            <th className="px-4 py-3">{t('logs.table.source')}</th>
+                            {filterSource === 'audit' ? <th className="px-4 py-3">{t('logs.table.action')}</th> : <th className="px-4 py-3">{t('logs.table.level')}</th>}
+                            <th className="px-4 py-3">{t('logs.table.message')}</th>
+                            {filterSource !== 'audit' && <th className="px-4 py-3 text-right">{t('logs.table.slide')}</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -112,7 +114,7 @@ const SystemLogs: React.FC = () => {
                                 {filterSource === 'audit' && (
                                     <td className="px-4 py-3">
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-slate-300">{log.user_id ? `User #${log.user_id}` : 'System'}</span>
+                                            <span className="text-xs font-bold text-slate-300">{log.user_id ? `${t('common.users')} #${log.user_id}` : t('logs.actor_system')}</span>
                                             <span className="text-[10px] text-slate-500 font-mono">{log.ip_address}</span>
                                         </div>
                                     </td>
@@ -147,7 +149,7 @@ const SystemLogs: React.FC = () => {
                         {logs.length === 0 && !loading && (
                             <tr>
                                 <td colSpan={5} className="px-4 py-12 text-center text-slate-500 italic">
-                                    No logs found for the current filters.
+                                    {t('logs.no_logs')}
                                 </td>
                             </tr>
                         )}

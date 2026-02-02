@@ -29,15 +29,17 @@ type JwtCustomClaims struct {
 	Email          string `json:"email,omitempty"`
 	Role           string `json:"role,omitempty"`
 	OrganizationID uint   `json:"organization_id"`
+	GroupIDs       []uint `json:"group_ids,omitempty"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userID uint, email string, role string, orgID uint) (string, error) {
+func GenerateToken(userID uint, email string, role string, orgID uint, groupIDs []uint) (string, error) {
 	claims := &JwtCustomClaims{
 		UserID:         userID,
 		Email:          email,
 		Role:           role,
 		OrganizationID: orgID,
+		GroupIDs:       groupIDs,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
 		},
@@ -73,6 +75,11 @@ func CheckPasswordHash(password, hash string) bool {
 
 func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		// If user is already set (e.g. by API Key Middleware), skip JWT check
+		if c.Get("user") != nil {
+			return next(c)
+		}
+
 		authHeader := c.Request().Header.Get("Authorization")
 		if authHeader == "" {
 			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing authorization header"})

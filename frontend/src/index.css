@@ -5,18 +5,42 @@
 :root {
   --primary: #6366f1;
   --primary-hover: #4f46e5;
+  --success: #22c55e;
+  --danger: #ef4444;
+}
+
+.dark {
   --bg-main: #0f172a;
   --bg-card: #1e293b;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --accent: #38bdf8;
-  --success: #22c55e;
-  --danger: #ef4444;
   --bg-modal: #1e293b;
   --bg-modal-light: #334155;
   --input-bg: #0f172a;
   --glass: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --sidebar-bg: #1e293b;
+  --sidebar-hover: rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --bg-tag: rgba(255, 255, 255, 0.1);
+}
+
+.light {
+  --bg-main: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --accent: #0ea5e9;
+  --bg-modal: #ffffff;
+  --bg-modal-light: #f8fafc;
+  --input-bg: #ffffff;
+  --glass: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --sidebar-bg: #ffffff;
+  --sidebar-hover: rgba(0, 0, 0, 0.03);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --bg-tag: rgba(0, 0, 0, 0.05);
 }
 
 * {
@@ -31,6 +55,7 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .glass-card {
@@ -52,7 +77,7 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  color: white;
+  color: var(--text-main);
   transition: all 0.2s;
 }
 

@@ -22,7 +22,7 @@ func GetUsers(c echo.Context) error {
 	}
 
 	var users []models.User
-	db.DB.Where("organization_id = ?", user.OrganizationID).Find(&users)
+	db.DB.Preload("Groups").Where("organization_id = ?", user.OrganizationID).Find(&users)
 	return c.JSON(http.StatusOK, users)
 }
 
@@ -35,12 +35,16 @@ func CreateUser(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	role := c.FormValue("role")
+	isOIDC := c.FormValue("is_oidc") == "true"
 
-	if email == "" || password == "" || role == "" {
+	if email == "" || (!isOIDC && password == "") || role == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	var hash []byte
+	if password != "" {
+		hash, _ = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	}
 
 	user := models.User{
 		Email:          email,
@@ -51,6 +55,13 @@ func CreateUser(c echo.Context) error {
 
 	if err := db.DB.Create(&user).Error; err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "User already exists or failed to create"})
+	}
+
+	// Assign groups if provided
+	if groupIDs := c.Request().Form["group_ids[]"]; len(groupIDs) > 0 {
+		var groups []models.Group
+		db.DB.Where("id IN ?", groupIDs).Find(&groups)
+		db.DB.Model(&user).Association("Groups").Replace(groups)
 	}
 
 	util.LogAudit(c, "CREATE", "USER", user.ID, fmt.Sprintf("Created user: %s (Role: %s)", user.Email, user.Role))
@@ -84,6 +95,16 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	db.DB.Save(&user)
+
+	// Update groups if provided
+	if groupIDs := c.Request().Form["group_ids[]"]; len(groupIDs) > 0 {
+		var groups []models.Group
+		db.DB.Where("id IN ?", groupIDs).Find(&groups)
+		db.DB.Model(&user).Association("Groups").Replace(groups)
+	} else if c.FormValue("group_ids_cleared") == "true" {
+		db.DB.Model(&user).Association("Groups").Clear()
+	}
+
 	util.LogAudit(c, "UPDATE", "USER", user.ID, fmt.Sprintf("Updated user: %s", user.Email))
 	return c.JSON(http.StatusOK, user)
 }

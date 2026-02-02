@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Settings, User, Building, Save, Mail, Key, Shield, Trash2, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const SettingsManager: React.FC = () => {
+    const { t } = useTranslation();
     const { user: currentUser } = useAuth();
     const [activeSection, setActiveSection] = useState<'profile' | 'organization' | 'retention'>('profile');
     const [loading, setLoading] = useState(false);
@@ -69,10 +71,10 @@ const SettingsManager: React.FC = () => {
 
         try {
             await axios.put('/api/settings/profile', formData);
-            alert("Profile updated successfully!");
+            alert(t('settings.alerts.profile_success'));
             setPassword('');
         } catch (err) {
-            alert("Failed to update profile");
+            alert(t('settings.alerts.profile_fail'));
         } finally {
             setLoading(false);
         }
@@ -91,12 +93,11 @@ const SettingsManager: React.FC = () => {
 
         try {
             await axios.put('/api/settings/org', formData);
-            alert("Settings updated!");
+            alert(t('settings.alerts.org_success'));
         } catch (err: any) {
             console.error("Failed to update organization", err);
-            const errorMessage = err.response?.data?.error || "Failed to update organization settings";
+            const errorMessage = err.response?.data?.error || t('settings.alerts.org_fail');
             alert(errorMessage);
-            // Revert local state if it was an OCR toggle failure (optional but good UX)
             if (errorMessage.includes("Tesseract")) {
                 setEnableOCR(false);
             }
@@ -109,8 +110,8 @@ const SettingsManager: React.FC = () => {
         <div className="max-w-4xl space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Settings</h3>
-                    <p className="text-slate-400 text-sm">Manage your personal and organization preferences</p>
+                    <h3 className="text-2xl font-bold text-[var(--text-main)] mb-1">{t('settings.title')}</h3>
+                    <p className="text-slate-400 text-sm">{t('settings.subtitle')}</p>
                 </div>
             </div>
 
@@ -120,40 +121,40 @@ const SettingsManager: React.FC = () => {
                     <button
                         onClick={() => setActiveSection('profile')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all
-                            ${activeSection === 'profile' ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                            ${activeSection === 'profile' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-main)]'}`}
                     >
                         <User size={18} />
-                        Personal Profile
+                        {t('settings.tabs.profile')}
                     </button>
                     <button
                         onClick={() => setActiveSection('organization')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all
-                            ${activeSection === 'organization' ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                            ${activeSection === 'organization' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-main)]'}`}
                     >
                         <Building size={18} />
-                        Organization
+                        {t('settings.tabs.organization')}
                     </button>
                     <button
                         onClick={() => setActiveSection('retention')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all
-                            ${activeSection === 'retention' ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                            ${activeSection === 'retention' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-main)]'}`}
                     >
                         <Trash2 size={18} />
-                        Retention Policy
+                        {t('settings.tabs.retention')}
                     </button>
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 glass-card p-8">
+                <div className="flex-1 glass-card p-8 border border-[var(--border-subtle)]" style={{ backgroundColor: 'var(--bg-card)' }}>
                     {activeSection === 'profile' && (
                         <form onSubmit={handleProfileUpdate} className="space-y-6">
                             <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
                                 <User className="text-indigo-400" />
-                                Profile Settings
+                                {t('settings.profile.title')}
                             </h4>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Email Address</label>
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.profile.email_address')}</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
@@ -166,14 +167,14 @@ const SettingsManager: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">New Password</label>
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.profile.new_password')}</label>
                                 <div className="relative">
                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Leave blank to keep current"
+                                        placeholder={t('settings.profile.password_hint')}
                                         className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                     />
                                 </div>
@@ -185,7 +186,7 @@ const SettingsManager: React.FC = () => {
                                 className="btn-primary flex items-center gap-2 px-6"
                             >
                                 <Save size={18} />
-                                Update Profile
+                                {t('settings.profile.update_button')}
                             </button>
                         </form>
                     )}
@@ -194,11 +195,11 @@ const SettingsManager: React.FC = () => {
                         <form onSubmit={handleOrgUpdate} className="space-y-6">
                             <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
                                 <Building className="text-indigo-400" />
-                                Organization Settings
+                                {t('settings.organization.title')}
                             </h4>
 
                             <div className="space-y-4">
-                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Organization Name</label>
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.organization.name')}</label>
                                 <input
                                     type="text"
                                     value={orgName}
@@ -214,8 +215,8 @@ const SettingsManager: React.FC = () => {
                                                 <Settings size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-white leading-tight">Enable Background OCR</p>
-                                                <p className="text-[10px] text-slate-400 font-medium">Extract text from images and videos to make them searchable</p>
+                                                <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.enable_ocr')}</p>
+                                                <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.ocr_desc')}</p>
                                             </div>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
@@ -232,14 +233,14 @@ const SettingsManager: React.FC = () => {
 
                                     <div className="pt-2 border-t border-white/5">
                                         <p className="text-[10px] text-slate-400 font-medium italic">
-                                            Requires Tesseract OCR installed on the server.{" "}
+                                            {t('settings.organization.ocr_requirement')}{" "}
                                             <a
                                                 href="https://tesseract-ocr.github.io/tessdoc/Installation.html"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-indigo-400 hover:underline inline-flex items-center gap-1"
                                             >
-                                                View Setup Guide
+                                                {t('settings.organization.ocr_guide')}
                                             </a>
                                         </p>
                                     </div>
@@ -248,12 +249,12 @@ const SettingsManager: React.FC = () => {
                                 <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-bold text-white leading-tight">Automated Screenshots</p>
-                                            <p className="text-[10px] text-slate-400 font-medium">How often players should report their screen status</p>
+                                            <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.screenshots')}</p>
+                                            <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.screenshots_desc')}</p>
                                         </div>
                                         <div className="text-right">
                                             <span className="text-xl font-black text-indigo-400">
-                                                {screenshotInterval === 0 ? 'Disabled' : `${screenshotInterval}m`}
+                                                {screenshotInterval === 0 ? t('settings.organization.disabled') : `${screenshotInterval}m`}
                                             </span>
                                         </div>
                                     </div>
@@ -268,7 +269,7 @@ const SettingsManager: React.FC = () => {
                                         className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500 disabled:opacity-50"
                                     />
                                     <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
-                                        <span>Off</span>
+                                        <span>{t('settings.organization.off')}</span>
                                         <span>15m</span>
                                         <span>30m</span>
                                         <span>45m</span>
@@ -283,8 +284,8 @@ const SettingsManager: React.FC = () => {
                                                 <Shield size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-white leading-tight">OIDC Auto-Provisioning</p>
-                                                <p className="text-[10px] text-slate-400 font-medium">Automatically create users who sign in via SSO</p>
+                                                <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.oidc_title')}</p>
+                                                <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.oidc_desc')}</p>
                                             </div>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
@@ -301,17 +302,17 @@ const SettingsManager: React.FC = () => {
 
                                     {allowOIDCAutoProvision && (
                                         <div className="pt-2 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Authorized Domain</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('settings.organization.oidc_domain')}</label>
                                             <input
                                                 type="text"
                                                 value={oidcDomain}
                                                 onChange={(e) => setOIDCDomain(e.target.value)}
-                                                placeholder="e.g. company.com (without @)"
+                                                placeholder={t('settings.organization.oidc_placeholder')}
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium"
                                             />
                                             <p className="text-[10px] text-amber-500/80 font-medium italic">
-                                                Users from other domains will still require a manual invite.
+                                                {t('settings.organization.oidc_hint')}
                                             </p>
                                         </div>
                                     )}
@@ -320,7 +321,7 @@ const SettingsManager: React.FC = () => {
                                 {currentUser?.role !== 'admin' && (
                                     <p className="text-[10px] text-amber-500 flex items-center gap-1 mt-1 font-bold italic uppercase">
                                         <Shield size={10} />
-                                        Only administrators can change organization settings
+                                        {t('settings.organization.admin_only')}
                                     </p>
                                 )}
                             </div>
@@ -332,7 +333,7 @@ const SettingsManager: React.FC = () => {
                                     className="btn-primary flex items-center gap-2 px-6"
                                 >
                                     <Save size={18} />
-                                    Save Changes
+                                    {t('common.save')}
                                 </button>
                             )}
                         </form>
@@ -342,25 +343,25 @@ const SettingsManager: React.FC = () => {
                         <form onSubmit={handleOrgUpdate} className="space-y-6 animate-in fade-in duration-300">
                             <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
                                 <Trash2 className="text-indigo-400" />
-                                Data Retention Policy
+                                {t('settings.retention.title')}
                             </h4>
 
                             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 mb-6">
                                 <h5 className="font-bold text-amber-500 text-sm mb-1 flex items-center gap-2">
                                     <Clock size={14} />
-                                    Automated Cleanup
+                                    {t('settings.retention.cleanup_title')}
                                 </h5>
                                 <p className="text-xs text-slate-400">
-                                    Items older than the specified days will be permanently deleted. Set to 0 to disable auto-deletion.
+                                    {t('settings.retention.cleanup_desc')}
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">File Storage</h5>
+                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">{t('settings.retention.storage_title')}</h5>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Trash (Soft Deleted)</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.trash')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -370,12 +371,12 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">System Screenshots</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.screenshots')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -385,16 +386,16 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">Logs & History</h5>
+                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">{t('settings.retention.logs_title')}</h5>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Audit Logs</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.audit')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -404,12 +405,12 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Worker Logs</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.worker')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -419,12 +420,12 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">API Logs</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.api')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -434,12 +435,12 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Automation (Burp) Logs</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.burp')}</label>
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="number"
@@ -449,7 +450,7 @@ const SettingsManager: React.FC = () => {
                                                 disabled={currentUser?.role !== 'admin'}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
-                                            <span className="text-sm text-slate-400 font-bold w-12">days</span>
+                                            <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -462,7 +463,7 @@ const SettingsManager: React.FC = () => {
                                     className="btn-primary flex items-center gap-2 px-6"
                                 >
                                     <Save size={18} />
-                                    Save Policy
+                                    {t('settings.retention.save_policy')}
                                 </button>
                             )}
                         </form>

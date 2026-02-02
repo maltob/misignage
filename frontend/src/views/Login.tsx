@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { Mail, Lock, LogIn, Github } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Login: React.FC = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -14,9 +16,6 @@ const Login: React.FC = () => {
         const token = urlParams.get('token');
         if (token) {
             // OIDC callback handling
-            // In a real app, you'd fetch the user profile with the token
-            // For now, let's assume login() is called with the token
-            // logic to handle user data from OIDC would go here
         }
     }, []);
 
@@ -27,7 +26,7 @@ const Login: React.FC = () => {
             const res = await axios.post('/login', { email, password });
             login(res.data.token, res.data.user);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Login failed');
+            setError(err.response?.data?.error || t('login.error_generic'));
         }
     };
 
@@ -36,79 +35,81 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-4">
-            <div className="max-w-md w-full glass-card p-8 shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)] p-4 font-sans transition-colors duration-300">
+            <div className="max-w-md w-full glass-card p-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+
                 <div className="text-center mb-8">
-                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-xl shadow-lg shadow-indigo-500/20">M</div>
-                    <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
-                    <p className="text-slate-400 mt-2">Sign in to manage your signage network</p>
+                    <div className="w-16 h-16 bg-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-black text-2xl text-white shadow-2xl shadow-indigo-500/40 transform -rotate-6 hover:rotate-0 transition-transform duration-500">M</div>
+                    <h2 className="text-4xl font-black text-[var(--text-main)] tracking-tight">{t('login.welcome')}</h2>
+                    <p className="text-slate-400 mt-2 font-medium">{t('login.subtitle')}</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-lg mb-6 text-sm flex items-center gap-2">
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-2xl mb-6 text-sm font-bold flex items-center gap-2 animate-shake">
                         <span>{error}</span>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">{t('login.email_label')}</label>
+                        <div className="relative group">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-indigo-400" size={18} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
-                                placeholder="name@company.com"
+                                className="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-2xl py-4 pl-12 pr-4 text-[var(--text-main)] placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                                placeholder={t('login.email_placeholder')}
                                 required
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">{t('login.password_label')}</label>
+                        <div className="relative group">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-indigo-400" size={18} />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
-                                placeholder="••••••••"
+                                className="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-2xl py-4 pl-12 pr-4 text-[var(--text-main)] placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                                placeholder={t('login.password_placeholder')}
                                 required
                             />
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full btn-primary py-3 flex items-center justify-center gap-2 text-base font-bold">
+                    <button type="submit" className="w-full bg-indigo-500 hover:bg-indigo-600 py-4 rounded-2xl flex items-center justify-center gap-2 text-white font-black text-lg transition-all shadow-[0_20px_40px_-15px_rgba(99,102,241,0.5)] active:scale-95">
                         <LogIn size={20} />
-                        Sign In
+                        {t('login.sign_in_button')}
                     </button>
                 </form>
 
-                <div className="relative my-8">
+                <div className="relative my-10">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/10"></div>
+                        <div className="w-full border-t border-[var(--border-subtle)]"></div>
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-[#1e293b] px-2 text-slate-500">Or continue with</span>
+                    <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
+                        <span className="bg-[var(--bg-card)] px-4 text-slate-500">{t('login.continue_with')}</span>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <button
                         onClick={() => handleOIDC('google')}
-                        className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 transition-all text-slate-300 font-medium"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--sidebar-hover)] hover:bg-[var(--glass-border)] transition-all text-[var(--text-main)] font-bold text-sm"
                     >
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
                         Google
                     </button>
                     <button
                         onClick={() => handleOIDC('microsoftonline')}
-                        className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 transition-all text-slate-300 font-medium"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--sidebar-hover)] hover:bg-[var(--glass-border)] transition-all text-[var(--text-main)] font-bold text-sm"
                     >
-                        <div className="w-4 h-4 grid grid-cols-2 gap-0.5">
+                        <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
                             <div className="bg-[#f25022]"></div>
                             <div className="bg-[#7fba00]"></div>
                             <div className="bg-[#00a4ef]"></div>
@@ -117,6 +118,12 @@ const Login: React.FC = () => {
                         Microsoft
                     </button>
                 </div>
+            </div>
+
+            <div className="fixed bottom-8 flex items-center gap-3 opacity-30 text-[10px] font-black uppercase tracking-[0.3em] text-white">
+                <span className="w-2 h-2 bg-slate-500 rounded-full"></span>
+                {t('common.powered_by')}
+                <span className="w-2 h-2 bg-slate-500 rounded-full"></span>
             </div>
         </div>
     );

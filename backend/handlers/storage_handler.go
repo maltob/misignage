@@ -7,11 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"fmt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/maltob/misignage/auth"
 	"github.com/maltob/misignage/db"
 	"github.com/maltob/misignage/models"
 	"github.com/maltob/misignage/storage"
+	"github.com/maltob/misignage/util"
 )
 
 type FileInfo struct {
@@ -68,6 +71,8 @@ func DeleteStorageFile(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete file"})
 	}
 
+	util.LogAudit(c, "DELETE_FILE", "STORAGE", 0, fmt.Sprintf("Deleted file: %s", filename))
+
 	return c.NoContent(http.StatusOK)
 }
 
@@ -94,6 +99,10 @@ func CleanupStorage(c echo.Context) error {
 			os.Remove(filepath.Join("uploads", f.Name()))
 			deletedCount++
 		}
+	}
+
+	if deletedCount > 0 {
+		util.LogAudit(c, "CLEANUP", "STORAGE", 0, fmt.Sprintf("Storage cleanup removed %d unused files", deletedCount))
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{

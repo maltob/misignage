@@ -78,7 +78,13 @@ func CompleteAuth(c echo.Context) error {
 		}
 	}
 
-	token, err := auth.GenerateToken(user.ID, user.Email, user.Role, user.OrganizationID)
+	var groupIDs []uint
+	db.DB.Model(&user).Association("Groups").Find(&user.Groups)
+	for _, g := range user.Groups {
+		groupIDs = append(groupIDs, g.ID)
+	}
+
+	token, err := auth.GenerateToken(user.ID, user.Email, user.Role, user.OrganizationID, groupIDs)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
 	}

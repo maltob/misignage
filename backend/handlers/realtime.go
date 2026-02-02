@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -69,6 +70,27 @@ func HandleWS(c echo.Context) error {
 			log.Printf("WS error for display %s: %v", displayID, err)
 			break
 		}
+
+		var incoming struct {
+			Type    string          `json:"type"`
+			Payload json.RawMessage `json:"payload"`
+		}
+		if err := json.Unmarshal(msg, &incoming); err == nil {
+			if incoming.Type == "screenshare_signal" {
+				log.Printf("[WS] Received signal from display: %s", string(incoming.Payload))
+				var sig struct {
+					SessionID uint   `json:"session_id"`
+					Signal    string `json:"signal"`
+				}
+				if err := json.Unmarshal(incoming.Payload, &sig); err == nil {
+					log.Printf("[WS] Routing signal to sharer for session %d", sig.SessionID)
+					PostSignalToSharer(sig.SessionID, sig.Signal)
+				} else {
+					log.Printf("[WS] Failed to unmarshal signal payload: %v", err)
+				}
+			}
+		}
+
 		log.Printf("Received from display %s: %s", displayID, string(msg))
 	}
 

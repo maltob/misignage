@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: miSignage API
+  version: 1.0.0
+  description: API for managing digital signage displays, slides, and playlists.
+servers:
+  - url: /api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+security:
+  - bearerAuth: []
+  - apiKey: []
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: OK
+  /slides/{id}/variables:
+    post:
+      summary: Update Slide Variables (External Script)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Variables updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /apikeys:
+    get:
+      summary: List API Keys
+      responses:
+        '200':
+          description: List of keys
+    post:
+      summary: Create API Key
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+      responses:
+        '201':
+          description: Key created
+  /apikeys/{id}:
+    delete:
+      summary: Delete/Revoke API Key
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: No Content
+  /slides:
+    get:
+      summary: List Slides
+    post:
+      summary: Create Slide
+  /displays:
+    get:
+      summary: List Displays
+  /playlists:
+    get:
+      summary: List Playlists
+  /schedules:
+    get:
+      summary: List Schedules

@@ -50,11 +50,20 @@ func main() {
 
 	// API Routes (Protected)
 	api := e.Group("/api")
-	api.Use(auth.JWTMiddleware)
+	api.Use(handlers.APIKeyMiddleware) // Allow API Key auth
+	api.Use(auth.JWTMiddleware)        // Fallback to JWT if API Key is not present/valid
 
 	api.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	})
+
+	// API Keys
+	api.GET("/apikeys", handlers.GetAPIKeys)
+	api.POST("/apikeys", handlers.CreateAPIKey)
+	api.DELETE("/apikeys/:id", handlers.DeleteAPIKey)
+
+	// External Variable Update (Slide)
+	api.POST("/slides/:id/variables", handlers.UpdateSlideVariables)
 
 	// Dashboard
 	api.GET("/dashboard/stats", handlers.GetDashboardStats)
@@ -80,6 +89,7 @@ func main() {
 	// Playlist Routes
 	api.POST("/playlists", handlers.CreatePlaylist)
 	api.GET("/playlists", handlers.GetPlaylists)
+	api.PUT("/playlists/:id", handlers.UpdatePlaylist)
 	api.DELETE("/playlists/:id", handlers.DeletePlaylist)
 	api.POST("/playlists/:id/slides", handlers.AddSlideToPlaylist)
 	api.PUT("/playlists/:id/slides", handlers.UpdatePlaylistSlides)
@@ -94,6 +104,12 @@ func main() {
 	api.GET("/groups", handlers.GetGroups)
 	api.DELETE("/groups/:id", handlers.DeleteGroup)
 	api.POST("/groups/:id/add", handlers.AddToGroup)
+	api.POST("/groups/:id/remove", handlers.RemoveFromGroup)
+
+	// Template Routes
+	api.GET("/templates", handlers.GetTemplates)
+	api.POST("/templates", handlers.CreateTemplate)
+	api.DELETE("/templates/:id", handlers.DeleteTemplate)
 
 	// Storage Management
 	api.GET("/storage", handlers.GetStorageFiles)
@@ -116,8 +132,21 @@ func main() {
 	api.GET("/poll", handlers.HandlePoll)
 	api.GET("/logs", handlers.GetSystemLogs)
 
+	// Screenshare
+	api.POST("/screenshare/direct", handlers.DirectJoinScreenshare)
+	api.GET("/screenshare/code", handlers.RequestPairingCode)
+	e.POST("/api/screenshare/join", handlers.JoinScreenshare) // Unauthenticated join via code
+	e.POST("/api/screenshare/:id/signal", handlers.SignalSharer)
+	e.GET("/api/screenshare/:id/receive", handlers.ReceiveSignal)
+	e.GET("/api/screenshare/ice", handlers.GetIceServers)
+	e.GET("/api/public/playlist/:slug", handlers.GetPublicPlaylist)
+	e.GET("/api/public/playlist/:slug/search", handlers.SearchPublicPlaylist)
+
 	// Static files for uploads (must be separate from frontend embed)
 	e.Static("/api/uploads", "uploads")
+	e.File("/openapi.yaml", "docs/openapi.yaml")
+	e.File("/openapi.yml", "docs/openapi.yaml")
+	e.GET("/docs", handlers.ServeDocs)
 
 	// Frontend Embedding
 	distFs, _ := fs.Sub(frontendDist, "dist")

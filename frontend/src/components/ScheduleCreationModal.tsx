@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Calendar, Clock, Target, PlaySquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ScheduleCreationModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface ScheduleCreationModalProps {
 }
 
 const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, onClose, onSuccess, editSchedule }) => {
+    const { t } = useTranslation();
     const [playlists, setPlaylists] = useState<any[]>([]);
     const [displays, setDisplays] = useState<any[]>([]);
     const [groups, setGroups] = useState<any[]>([]);
@@ -89,7 +91,7 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
             onSuccess();
             onClose();
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to create schedule');
+            setError(err.response?.data?.error || t('modals.schedule_creation.fail_message'));
         } finally {
             setLoading(false);
         }
@@ -102,48 +104,58 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
         }));
     };
 
+    const weekdayLabels = [
+        t('schedules.days.mon').charAt(0),
+        t('schedules.days.tue').charAt(0),
+        t('schedules.days.wed').charAt(0),
+        t('schedules.days.thu').charAt(0),
+        t('schedules.days.fri').charAt(0),
+        t('schedules.days.sat').charAt(0),
+        t('schedules.days.sun').charAt(0)
+    ];
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="modal-card w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50">
+            <div className="modal-card w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200" style={{ backgroundColor: 'var(--bg-modal)' }}>
+                <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)] bg-[var(--sidebar-hover)]">
                     <div>
-                        <h3 className="text-xl font-bold text-white">
-                            {editSchedule ? 'Edit Schedule Strategy' : 'Program New Schedule'}
+                        <h3 className="text-xl font-bold text-[var(--text-main)]">
+                            {editSchedule ? t('modals.schedule_creation.edit_title') : t('modals.schedule_creation.new_title')}
                         </h3>
-                        <p className="text-xs text-slate-400 mt-1">Assign playlists to displays and groups with precise timing</p>
+                        <p className="text-xs text-[var(--text-muted)] mt-1">{t('modals.schedule_creation.subtitle')}</p>
                     </div>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-all">
+                    <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--border-subtle)] text-slate-500 hover:text-[var(--text-main)] transition-all">
                         <X size={20} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-slate-800/20">
+                <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-transparent">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         {/* Column 1: Playlist & Timing */}
                         <div className="space-y-8">
                             <div className="space-y-6">
-                                <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-indigo-400 border-b border-white/5 pb-2">
-                                    <PlaySquare size={14} /> Content & Cycle
+                                <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-indigo-400 border-b border-[var(--border-subtle)] pb-2">
+                                    <PlaySquare size={14} /> {t('modals.schedule_creation.content_cycle')}
                                 </h4>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-300 ml-1">Assigned Playlist</label>
+                                    <label className="text-sm font-semibold text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.assigned_playlist')}</label>
                                     <select
                                         value={selection.playlist_id}
                                         onChange={(e) => setSelection({ ...selection, playlist_id: e.target.value })}
-                                        className="w-full input-field font-bold bg-slate-900 border-2"
+                                        className="w-full input-field font-bold bg-[var(--input-bg)] border-2 border-[var(--border-subtle)] text-[var(--text-main)]"
                                         required
                                     >
-                                        <option value="" className="bg-slate-900">Choose a playlist...</option>
+                                        <option value="" className="bg-[var(--bg-card)]">{t('modals.schedule_creation.playlist_placeholder')}</option>
                                         {playlists.map(p => (
-                                            <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>
+                                            <option key={p.id} value={p.id} className="bg-[var(--bg-card)]">{p.name}</option>
                                         ))}
                                     </select>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Starts At</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.starts_at')}</label>
                                         <div className="relative">
                                             <input
                                                 type="time"
@@ -156,7 +168,7 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ends At</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.ends_at')}</label>
                                         <div className="relative">
                                             <input
                                                 type="time"
@@ -172,37 +184,37 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Active Weekdays</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.active_weekdays')}</label>
                                 <div className="flex gap-2">
-                                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                                    {weekdayLabels.map((day, i) => (
                                         <button
                                             key={i}
                                             type="button"
                                             onClick={() => toggleDay(i)}
                                             className={`flex-1 h-12 rounded-xl font-black transition-all border-2 ${selection.days_mask & (1 << i)
                                                 ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg'
-                                                : 'bg-slate-900 border-white/5 text-slate-500 hover:border-white/10'
+                                                : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-slate-500 hover:border-indigo-500/30'
                                                 }`}
                                         >
                                             {day}
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-[9px] text-slate-500 italic text-center">Highlight days when this schedule should be active</p>
+                                <p className="text-[9px] text-slate-500 italic text-center">{t('modals.schedule_creation.weekdays_hint')}</p>
                             </div>
                         </div>
 
                         {/* Column 2: Target Selection */}
                         <div className="space-y-6">
-                            <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-indigo-400 border-b border-white/5 pb-2">
-                                <Target size={14} /> Target Audience
+                            <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-indigo-400 border-b border-[var(--border-subtle)] pb-2">
+                                <Target size={14} /> {t('modals.schedule_creation.target_audience')}
                             </h4>
 
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-end mb-1">
-                                        <label className="text-sm font-semibold text-slate-300 ml-1">Target Groups</label>
-                                        <span className="text-[10px] text-slate-500 uppercase font-bold">{selection.group_ids.length} Selected</span>
+                                        <label className="text-sm font-semibold text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.target_groups')}</label>
+                                        <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold">{t('modals.schedule_creation.selected_count', { count: selection.group_ids.length })}</span>
                                     </div>
                                     <select
                                         multiple
@@ -211,7 +223,7 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                                             ...selection,
                                             group_ids: Array.from(e.target.selectedOptions, option => parseInt(option.value))
                                         })}
-                                        className="w-full input-field font-semibold h-44 bg-slate-900 custom-scrollbar border-2"
+                                        className="w-full input-field font-semibold h-44 bg-[var(--input-bg)] text-[var(--text-main)] custom-scrollbar border-2 border-[var(--border-subtle)] focus:border-indigo-500/50"
                                     >
                                         {groups.map(g => (
                                             <option key={g.id} value={g.id} className="p-3 my-1 rounded-lg checked:bg-indigo-600 cursor-pointer">{g.name}</option>
@@ -221,8 +233,8 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-end mb-1">
-                                        <label className="text-sm font-semibold text-slate-300 ml-1">Individual Displays</label>
-                                        <span className="text-[10px] text-slate-500 uppercase font-bold">{selection.display_ids.length} Included</span>
+                                        <label className="text-sm font-semibold text-[var(--text-muted)] ml-1">{t('modals.schedule_creation.individual_displays')}</label>
+                                        <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold">{t('modals.schedule_creation.included_count', { count: selection.display_ids.length })}</span>
                                     </div>
                                     <select
                                         multiple
@@ -231,13 +243,13 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                                             ...selection,
                                             display_ids: Array.from(e.target.selectedOptions, option => parseInt(option.value))
                                         })}
-                                        className="w-full input-field font-semibold h-44 bg-slate-900 custom-scrollbar border-2"
+                                        className="w-full input-field font-semibold h-44 bg-[var(--input-bg)] text-[var(--text-main)] custom-scrollbar border-2 border-[var(--border-subtle)] focus:border-indigo-500/50"
                                     >
                                         {displays.map(d => (
-                                            <option key={d.id} value={d.id} className="p-3 my-1 rounded-lg checked:bg-indigo-600 cursor-pointer">{d.name || `Unit #${d.id}`}</option>
+                                            <option key={d.id} value={d.id} className="p-3 my-1 rounded-lg checked:bg-indigo-600 cursor-pointer">{d.name || `${t('modals.schedule_creation.unit_prefix')}${d.id}`}</option>
                                         ))}
                                     </select>
-                                    <p className="text-[10px] text-slate-500 italic">Optional overrides for specific hardware units</p>
+                                    <p className="text-[10px] text-slate-500 italic">{t('modals.schedule_creation.overrides_hint')}</p>
                                 </div>
                             </div>
                         </div>
@@ -249,13 +261,13 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                         </div>
                     )}
 
-                    <div className="flex gap-4 pt-10 border-t border-white/5">
+                    <div className="flex gap-4 pt-10 border-t border-[var(--border-subtle)]">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-8 py-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 transition-all text-sm uppercase tracking-widest"
+                            className="flex-1 px-8 py-4 rounded-xl border border-[var(--border-subtle)] text-[var(--text-main)] font-bold hover:bg-[var(--sidebar-hover)] transition-all text-sm uppercase tracking-widest"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                         <button
                             type="submit"
@@ -265,10 +277,10 @@ const ScheduleCreationModal: React.FC<ScheduleCreationModalProps> = ({ isOpen, o
                             {loading ? (
                                 <div className="flex items-center justify-center gap-3">
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                    <span>Syncing Strategy...</span>
+                                    <span>{t('modals.schedule_creation.syncing_button')}</span>
                                 </div>
                             ) : (
-                                <span>{editSchedule ? 'Save Changes' : 'Propagate Schedule'}</span>
+                                <span>{editSchedule ? t('common.save') : t('modals.schedule_creation.propagate_button')}</span>
                             )}
                         </button>
                     </div>

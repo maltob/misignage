@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Monitor, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { Monitor, Wifi, WifiOff, AlertTriangle, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { useTranslation } from 'react-i18next';
+import ScreenshareOverlay from '../components/ScreenshareOverlay';
 
 const Player: React.FC = () => {
+    const { t } = useTranslation();
     const [display, setDisplay] = useState<any>(null);
     const [currentSlide, setCurrentSlide] = useState<any>(null);
     const [resolvedUrl, setResolvedUrl] = useState<string>('');
@@ -16,6 +19,16 @@ const Player: React.FC = () => {
     const [syncing, setSyncing] = useState(false);
     const [syncProgress, setSyncProgress] = useState(0);
     const [screenshotInterval, setScreenshotInterval] = useState(0);
+
+    // Screenshare State
+    const [screenshareCode, setScreenshareCode] = useState('');
+    const [isScreensharing, setIsScreensharing] = useState(false);
+    const [screenshareGuestName, setScreenshareGuestName] = useState('');
+    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+    const pcRef = useRef<RTCPeerConnection | null>(null);
+    const signalingPendingRef = useRef<any[]>([]);
+    const isInitializingPCRef = useRef(false);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
 
     const getHeaders = () => {
         const token = localStorage.getItem('display_token');
@@ -90,6 +103,7 @@ const Player: React.FC = () => {
             socket.onopen = () => {
                 console.log("WebSocket Connected");
                 setOnline(true);
+                (window as any)._playerWS = socket;
             };
 
             socket.onmessage = (event) => {
@@ -110,7 +124,10 @@ const Player: React.FC = () => {
         };
 
         connect();
-        return () => socket?.close();
+        return () => {
+            socket?.close();
+            (window as any)._playerWS = null;
+        };
     }, []);
 
     const handleRemoteCommand = (msg: any) => {
@@ -124,6 +141,13 @@ const Player: React.FC = () => {
                 break;
             case 'SCREENSHOT':
                 captureAndUploadScreenshot();
+                break;
+            case 'FORCE_SCREENSHARE':
+                setScreenshareGuestName(msg.payload.guest_name || t('screenshare.active_guest'));
+                setIsScreensharing(true);
+                break;
+            case 'screenshare_signal':
+                handleScreenshareSignal(msg.payload);
                 break;
             default:
                 console.warn("Unknown command type:", msg.type);
@@ -185,6 +209,127 @@ const Player: React.FC = () => {
             }
         };
     }, [playlist, slideIndex, online]);
+
+    const fetchScreenshareCode = async () => {
+        if (status !== 'active') return;
+        try {
+            const id = localStorage.getItem('display_id');
+            const res = await axios.get(`/api/screenshare/code?display_id=${id}`, getHeaders());
+            setScreenshareCode(res.data.code);
+            console.log("[Screenshare] New pairing code generated:", res.data.code);
+        } catch (e) {
+            console.error("Failed to fetch pairing code", e);
+        }
+    };
+
+    // Pairing Code Retrieval
+    useEffect(() => {
+        if (status !== 'active') return;
+        fetchScreenshareCode();
+        const interval = setInterval(fetchScreenshareCode, 5 * 60 * 1000); // Life insurance: refresh every 5 mins
+        return () => clearInterval(interval);
+    }, [status]);
+
+    const handleScreenshareSignal = async (payload: any) => {
+        const { signal, session_id, guest_name } = payload;
+        if (guest_name) setScreenshareGuestName(guest_name);
+
+        if (!pcRef.current && !isInitializingPCRef.current) {
+            isInitializingPCRef.current = true;
+            try {
+                const iceRes = await axios.get('/api/screenshare/ice');
+                const pc = new RTCPeerConnection({ iceServers: iceRes.data });
+
+                pc.ontrack = (event) => {
+                    console.log("[WebRTC] Remote track received", event.streams[0]);
+                    setRemoteStream(event.streams[0]);
+                    setIsScreensharing(true);
+                };
+
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendSignalToSharer(session_id, JSON.stringify(event.candidate));
+                    }
+                };
+
+                pc.oniceconnectionstatechange = () => {
+                    console.log("[WebRTC] ICE Connection State:", pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
+                        console.log("[WebRTC] Screenshare stopping due to ICE state:", pc.iceConnectionState);
+                        stopScreenshare();
+                    }
+                };
+
+                pcRef.current = pc;
+                isInitializingPCRef.current = false;
+
+                // Process buffered signals
+                const pending = signalingPendingRef.current;
+                signalingPendingRef.current = [];
+                for (const sig of pending) {
+                    await processSignal(sig, session_id);
+                }
+
+                // Process current signal
+                await processSignal(signal, session_id);
+            } catch (err) {
+                console.error("Failed to initialize WebRTC", err);
+                isInitializingPCRef.current = false;
+            }
+        } else if (isInitializingPCRef.current) {
+            signalingPendingRef.current.push(signal);
+        } else {
+            await processSignal(signal, session_id);
+        }
+    };
+
+    const processSignal = async (signal: string, session_id: number) => {
+        if (!pcRef.current) return;
+        try {
+            const data = JSON.parse(signal);
+            console.log("[WebRTC] Processing incoming signal:", data.type || (data.candidate ? 'candidate' : 'unknown'));
+            if (data.type === 'offer') {
+                await pcRef.current.setRemoteDescription(new RTCSessionDescription(data));
+                const answer = await pcRef.current.createAnswer();
+                await pcRef.current.setLocalDescription(answer);
+                console.log("[WebRTC] Sending answer back to sharer");
+                sendSignalToSharer(session_id, JSON.stringify(answer));
+            } else if (data.candidate) {
+                await pcRef.current.addIceCandidate(new RTCIceCandidate(data));
+            }
+        } catch (e) {
+            console.error("[WebRTC] Failed to process signal", e);
+        }
+    };
+
+    const stopScreenshare = () => {
+        pcRef.current?.close();
+        pcRef.current = null;
+        setRemoteStream(null);
+        setIsScreensharing(false);
+        setScreenshareGuestName('');
+        // Regenerate code immediately after a session ends for security/freshness
+        fetchScreenshareCode();
+    };
+
+    const sendSignalToSharer = (sessionId: number, signal: string) => {
+        const ws = (window as any)._playerWS;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+                type: 'screenshare_signal',
+                payload: {
+                    session_id: sessionId,
+                    signal: signal
+                }
+            }));
+        }
+    };
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.srcObject = remoteStream;
+        }
+    }, [remoteStream]);
 
     // Automated Screenshot Interval
     useEffect(() => {
@@ -386,13 +531,13 @@ const Player: React.FC = () => {
                 </div>
                 <h1 className="text-5xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">miSignage</h1>
                 <p className="text-xl text-slate-400 max-w-md mb-12 font-medium">
-                    This media player has not been registered.<br />Press the button below to generate a claim code.
+                    {t('player.not_registered')}<br />{t('player.generate_claim_hint')}
                 </p>
                 <button
                     onClick={registerDisplay}
                     className="px-10 py-5 bg-indigo-500 hover:bg-indigo-600 rounded-3xl font-black text-2xl transition-all shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] active:scale-95"
                 >
-                    Register This Device
+                    {t('player.register_button')}
                 </button>
             </div>
         );
@@ -403,19 +548,19 @@ const Player: React.FC = () => {
             <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-8 text-center text-white">
                 <div className="mb-8 text-slate-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
                     <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
-                    Waiting for link
+                    {t('player.waiting_link')}
                 </div>
                 <div className="w-48 h-48 bg-white/5 border border-white/10 rounded-[3rem] flex items-center justify-center mb-12 text-7xl font-black shadow-2xl backdrop-blur-xl relative">
                     <div className="absolute inset-0 bg-indigo-500/5 blur-2xl rounded-full"></div>
                     <span className="relative text-white">{display?.registration_code || '---'}</span>
                 </div>
-                <h1 className="text-4xl font-black mb-4">Pair Your Display</h1>
+                <h1 className="text-4xl font-black mb-4">{t('player.pair_title')}</h1>
                 <p className="text-xl text-slate-400 max-w-sm mb-12">
-                    Go to your dashboard and enter this code to start broadcasting content.
+                    {t('player.pair_desc')}
                 </p>
                 <div className="p-4 bg-white/5 rounded-2xl flex items-center gap-3 border border-white/5">
                     <div className={`w-3 h-3 rounded-full ${online ? 'bg-emerald-500' : 'bg-red-500'} shadow-[0_0_10px_currentColor]`}></div>
-                    <span className="text-sm font-bold text-slate-400">{online ? 'Connected to Network' : 'Disconnected'}</span>
+                    <span className="text-sm font-bold text-slate-400">{online ? t('player.connected') : t('player.disconnected')}</span>
                 </div>
             </div>
         );
@@ -424,7 +569,7 @@ const Player: React.FC = () => {
     const renderSlide = () => {
         if (!currentSlide) return null;
 
-        let data = { url: '' };
+        let data: any = { url: '' };
         try {
             data = JSON.parse(currentSlide.content);
         } catch (e) { }
@@ -448,21 +593,114 @@ const Player: React.FC = () => {
                 }
                 return <iframe src={resolvedUrl} className="w-full h-full border-none animate-in fade-in duration-1000" title="web-slide" />;
             case 'table':
+                const theme = data?.theme || 'default';
+                const rows = data?.rows || [];
+                const headers = rows.length > 0 ? rows[0] : [];
+                const body = rows.length > 1 ? rows.slice(1) : [];
+
                 return (
-                    <div className="w-full h-full flex items-center justify-center p-20 animate-in zoom-in duration-1000">
-                        <div className="glass-card p-12 w-full max-w-6xl shadow-[0_0_100px_-20px_rgba(0,0,0,0.5)]">
-                            <h2 className="text-4xl font-bold mb-8 text-indigo-400 uppercase tracking-tighter">Information Display</h2>
-                            <div className="pre text-2xl text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
-                                {typeof data === 'string' ? data : JSON.stringify(data, null, 2)}
-                            </div>
+                    <div className="w-full h-full flex flex-col items-center justify-center p-8 lg:p-12 animate-in zoom-in-95 duration-700">
+                        <div className={`table-container theme-${theme} w-full max-w-[95%] max-h-[90%] overflow-hidden flex flex-col`}>
+                            <table className="player-table w-full">
+                                <thead>
+                                    <tr>
+                                        {headers.map((h: string, i: number) => (
+                                            <th key={i}>{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="overflow-y-auto">
+                                    {body.map((row: string[], ri: number) => (
+                                        <tr key={ri}>
+                                            {row.map((cell: string, ci: number) => (
+                                                <td key={ci}>{cell}</td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                    {rows.length === 0 && (
+                                        <tr>
+                                            <td className="text-center py-20 text-slate-500 italic">{t('player.no_table_data')}</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                );
+            case 'html':
+                const html = data?.html || '';
+                const css = data?.css || '';
+                const js = data?.js || '';
+                const variables = data?.variables || {};
+
+                // Simple variable injection: Replace {{key}} with value
+                let finalHtml = html;
+                if (variables) {
+                    Object.keys(variables).forEach(key => {
+                        const val = variables[key];
+                        finalHtml = finalHtml.replaceAll(`{{${key}}}`, val);
+                    });
+                }
+
+                const combinedContent = `
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <meta charset="utf-8">
+                            <style>
+                                body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: transparent; color: white; font-family: sans-serif; }
+                                ${css}
+                            </style>
+                        </head>
+                        <body>
+                            ${finalHtml}
+                            <script>
+                                (function() {
+                                    try {
+                                        const CONFIG = ${JSON.stringify(variables || {})};
+                                        ${js}
+                                    } catch (e) {
+                                        console.error("Custom JS Error:", e);
+                                    }
+                                })();
+                            </script>
+                        </body>
+                    </html>
+                `;
+
+                return (
+                    <div className="w-full h-full animate-in fade-in duration-700">
+                        <iframe
+                            title="HTML Slide"
+                            srcDoc={combinedContent}
+                            className="w-full h-full border-0"
+                            sandbox="allow-scripts"
+                        />
+                    </div>
+                );
+            case 'screenshare':
+                return (
+                    <div className="w-full h-full flex items-center justify-center bg-black">
+                        {!isScreensharing && (
+                            <div className="text-center opacity-30 animate-pulse">
+                                <Share2 size={120} className="mb-4 mx-auto" />
+                                <h2 className="text-2xl font-black uppercase tracking-widest">{t('player.awaiting_share')}</h2>
+                            </div>
+                        )}
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className={`w-full h-full ${isScreensharing ? 'block' : 'hidden'}`}
+                        />
                     </div>
                 );
             default:
                 return (
                     <div className="text-center opacity-20">
                         <Monitor size={150} />
-                        <p className="mt-4 font-black uppercase">Unsupported Format</p>
+                        <p className="mt-4 font-black uppercase">{t('player.unsupported_format')}</p>
                     </div>
                 );
         }
@@ -479,7 +717,7 @@ const Player: React.FC = () => {
             {!online && (
                 <div className="absolute bottom-8 left-8 z-50 flex items-center gap-2 bg-black/20 backdrop-blur-md text-white/30 px-4 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase border border-white/5 animate-in fade-in slide-in-from-left-4 duration-1000">
                     <WifiOff size={14} className="opacity-50" />
-                    Offline Mode
+                    {t('player.offline_mode')}
                 </div>
             )}
 
@@ -487,16 +725,39 @@ const Player: React.FC = () => {
             {syncing && (
                 <div className="absolute top-8 right-8 z-50 flex items-center gap-4 bg-indigo-600/90 backdrop-blur-xl text-white px-6 py-4 rounded-[2rem] text-sm font-bold shadow-2xl animate-in slide-in-from-right-8">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    SYNCING CONTENT: {syncProgress}%
+                    {t('player.syncing', { progress: syncProgress })}
                 </div>
             )}
 
             {/* Subtle overlay if no content */}
-            {!currentSlide && (
+            {!currentSlide && !isScreensharing && (
                 <div className="z-10 text-center opacity-10">
                     <Monitor size={200} className="mb-8 mx-auto" />
-                    <h2 className="text-4xl font-black uppercase tracking-[1em] ml-[1em]">IDLE</h2>
+                    <h2 className="text-4xl font-black uppercase tracking-[1em] ml-[1em]">{t('player.idle')}</h2>
                 </div>
+            )}
+
+            {/* Screenshare Overlay (Global takeover) */}
+            {isScreensharing && currentSlide?.type !== 'screenshare' && (
+                <div className="absolute inset-0 z-[100] bg-black">
+                    <video
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full"
+                        ref={(el) => { if (el) el.srcObject = remoteStream; }}
+                    />
+                </div>
+            )}
+
+            {/* Pairing Code Overlay */}
+            {screenshareCode && (
+                <ScreenshareOverlay
+                    code={screenshareCode}
+                    isConnected={isScreensharing}
+                    guestName={screenshareGuestName}
+                    oidcRequired={currentSlide?.oidc_required || display?.ScreenshareOIDCRequired}
+                />
             )}
         </div>
     );

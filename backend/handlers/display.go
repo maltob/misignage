@@ -6,12 +6,14 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/maltob/misignage/auth"
 	"github.com/maltob/misignage/db"
 	"github.com/maltob/misignage/models"
+	"github.com/maltob/misignage/util"
 )
 
 func RegisterDisplay(c echo.Context) error {
@@ -42,6 +44,9 @@ func RegisterDisplay(c echo.Context) error {
 	if err := db.DB.Create(&display).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create display"})
 	}
+
+	// Log audit event (System action, no user)
+	util.LogAudit(c, "REGISTER", "DISPLAY", display.ID, fmt.Sprintf("Display registered with code %s", code))
 
 	// Return the display with the PLAINTEXT secret (one-time only)
 	return c.JSON(http.StatusCreated, map[string]interface{}{
@@ -98,6 +103,7 @@ func ApproveDisplay(c echo.Context) error {
 	}
 
 	fmt.Printf("Successfully approved display: %d\n", display.ID)
+	util.LogAudit(c, "APPROVE", "DISPLAY", display.ID, "Display approved and linked to organization")
 	return c.JSON(http.StatusOK, display)
 }
 
@@ -144,6 +150,7 @@ func ClaimDisplayByCode(c echo.Context) error {
 	db.DB.Model(&mainGroup).Association("Displays").Append(&display)
 
 	fmt.Printf("Successfully claimed display: %d (%s) and added to Main group\n", display.ID, display.Name)
+	util.LogAudit(c, "CLAIM", "DISPLAY", display.ID, "Display claimed via registration code")
 	return c.JSON(http.StatusOK, display)
 }
 
@@ -154,7 +161,18 @@ func GetDisplays(c echo.Context) error {
 	}
 
 	var displays []models.Display
-	db.DB.Where("organization_id = ?", user.OrganizationID).Find(&displays)
+	dbQuery := db.DB.Where("organization_id = ?", user.OrganizationID)
+
+	if user.Role != "admin" {
+		if len(user.GroupIDs) > 0 {
+			dbQuery = dbQuery.Joins("JOIN group_displays ON group_displays.display_id = displays.id").
+				Where("group_displays.group_id IN ?", user.GroupIDs)
+		} else {
+			return c.JSON(http.StatusOK, []models.Display{})
+		}
+	}
+
+	dbQuery.Preload("Groups.Schedules").Preload("Schedules").Find(&displays)
 	return c.JSON(http.StatusOK, displays)
 }
 
@@ -274,6 +292,9 @@ func SendDisplayCommand(c echo.Context) error {
 	// Route to WebSocket
 	NotifyDisplay(idStr, req.Command, req.Payload)
 
+	idUint, _ := strconv.Atoi(idStr)
+	util.LogAudit(c, "SEND_COMMAND", "DISPLAY", uint(idUint), fmt.Sprintf("Command: %s", req.Command))
+
 	return c.NoContent(http.StatusOK)
 }
 
@@ -338,6 +359,8 @@ func DeleteDisplay(c echo.Context) error {
 	if err := db.DB.Delete(&display).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete display"})
 	}
+
+	util.LogAudit(c, "DELETE", "DISPLAY", display.ID, "Display deleted")
 
 	return c.NoContent(http.StatusOK)
 }

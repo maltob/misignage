@@ -48,6 +48,9 @@ func CreateSlide(c echo.Context) error {
 		contentMap := map[string]string{"url": url}
 		jsonContent, _ := json.Marshal(contentMap)
 		content = string(jsonContent)
+	} else if slideType == "html" {
+		// content is expected to be a JSON string of {html: "", css: "", js: "", variables: {}}
+		content = c.FormValue("content")
 	} else {
 		// For tables or other text-based content, ensure it's valid JSON
 		rawContent := c.FormValue("content")
@@ -87,6 +90,13 @@ func CreateSlide(c echo.Context) error {
 		QueueProcessingTask(slide.ID)
 	}
 
+	// Assign groups if provided
+	if groupIDs := c.Request().Form["group_ids[]"]; len(groupIDs) > 0 {
+		var groups []models.Group
+		db.DB.Where("id IN ?", groupIDs).Find(&groups)
+		db.DB.Model(&slide).Association("Groups").Replace(groups)
+	}
+
 	util.LogAudit(c, "CREATE", "SLIDE", slide.ID, fmt.Sprintf("Created slide: %s (%s)", slide.Name, slide.Type))
 	return c.JSON(http.StatusCreated, slide)
 }
@@ -98,12 +108,21 @@ func GetSlides(c echo.Context) error {
 	var slides []models.Slide
 	dbQuery := db.DB.Where("organization_id = ?", user.OrganizationID)
 
+	if user.Role != "admin" {
+		if len(user.GroupIDs) > 0 {
+			dbQuery = dbQuery.Joins("JOIN group_slides ON group_slides.slide_id = slides.id").
+				Where("group_slides.group_id IN ?", user.GroupIDs)
+		} else {
+			return c.JSON(http.StatusOK, []models.Slide{})
+		}
+	}
+
 	if query != "" {
 		likeQuery := "%" + query + "%"
 		dbQuery = dbQuery.Where("name LIKE ? OR ocr_content LIKE ?", likeQuery, likeQuery)
 	}
 
-	dbQuery.Order("created_at DESC").Find(&slides)
+	dbQuery.Order("created_at DESC").Preload("Groups").Find(&slides)
 	return c.JSON(http.StatusOK, slides)
 }
 
@@ -118,6 +137,11 @@ func UpdateSlide(c echo.Context) error {
 	name := c.FormValue("name")
 	if name != "" {
 		slide.Name = name
+	}
+
+	ocrContent := c.FormValue("ocr_content")
+	if ocrContent != "" || c.Request().Form.Has("ocr_content") {
+		slide.OCRContent = ocrContent
 	}
 
 	scaleMode := c.FormValue("scale_mode")
@@ -226,6 +250,15 @@ func UpdateSlide(c echo.Context) error {
 		}
 	}
 
+	// Update groups if provided
+	if groupIDs := c.Request().Form["group_ids[]"]; len(groupIDs) > 0 {
+		var groups []models.Group
+		db.DB.Where("id IN ?", groupIDs).Find(&groups)
+		db.DB.Model(&slide).Association("Groups").Replace(groups)
+	} else if c.FormValue("group_ids_cleared") == "true" {
+		db.DB.Model(&slide).Association("Groups").Clear()
+	}
+
 	util.LogAudit(c, "UPDATE", "SLIDE", slide.ID, fmt.Sprintf("Updated slide: %s", slide.Name))
 	return c.JSON(http.StatusOK, slide)
 }
@@ -262,4 +295,53 @@ func DeleteSlide(c echo.Context) error {
 
 	util.LogAudit(c, "DELETE", "SLIDE", slide.ID, fmt.Sprintf("Deleted slide: %s", slide.Name))
 	return c.NoContent(http.StatusNoContent)
+}
+
+func UpdateSlideVariables(c echo.Context) error {
+	userClaims := c.Get("user").(*auth.JwtCustomClaims)
+	id := c.Param("id")
+
+	var slide models.Slide
+	if err := db.DB.Where("id = ? AND organization_id = ?", id, userClaims.OrganizationID).First(&slide).Error; err != nil {
+		return c.JSON(http.StatusNotFound, echo.Map{"error": "Slide not found"})
+	}
+
+	if slide.Type != "html" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Only HTML slides support variable updates via this API"})
+	}
+
+	// Parse incoming variables
+	var newVars map[string]interface{}
+	if err := c.Bind(&newVars); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid variable format"})
+	}
+
+	// Load existing content
+	var content map[string]interface{}
+	if err := json.Unmarshal([]byte(slide.Content), &content); err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to parse existing slide content"})
+	}
+
+	// Update variables
+	existingVars, ok := content["variables"].(map[string]interface{})
+	if !ok {
+		existingVars = make(map[string]interface{})
+	}
+
+	for k, v := range newVars {
+		existingVars[k] = v
+	}
+	content["variables"] = existingVars
+
+	// Save back
+	updatedContent, _ := json.Marshal(content)
+	slide.Content = string(updatedContent)
+
+	if err := db.DB.Save(&slide).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to update slide"})
+	}
+
+	util.LogAudit(c, "UPDATE_VARS", "SLIDE", slide.ID, fmt.Sprintf("Updated variables for slide: %s", slide.Name))
+
+	return c.JSON(http.StatusOK, slide)
 }

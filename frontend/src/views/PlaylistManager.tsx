@@ -1,21 +1,25 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Plus, PlaySquare, Trash2, GripVertical, Clock, X, ChevronUp, ChevronDown, Video, Globe, Search } from 'lucide-react';
+import { Plus, PlaySquare, Trash2, Clock, ChevronUp, ChevronDown, Video, Globe, Share2, ExternalLink, Check, Copy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PlaylistCreationModal from '../components/PlaylistCreationModal';
 import SlideSelectionModal from '../components/SlideSelectionModal';
 
 interface Playlist {
     id: number;
     name: string;
+    is_public: boolean;
+    public_slug: string;
     slides: any[];
+    groups: any[];
 }
 
 const PlaylistManager: React.FC = () => {
+    const { t } = useTranslation();
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [slides, setSlides] = useState<any[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
     const [selectionModalOpen, setSelectionModalOpen] = useState(false);
     const [targetPlaylist, setTargetPlaylist] = useState<Playlist | null>(null);
 
@@ -43,12 +47,12 @@ const PlaylistManager: React.FC = () => {
     };
 
     const deletePlaylist = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this playlist?")) return;
+        if (!confirm(t('playlists.confirm_delete'))) return;
         try {
             await axios.delete(`/api/playlists/${id}`);
             fetchPlaylists();
         } catch (err) {
-            alert("Failed to delete playlist");
+            alert(t('playlists.delete_failed'));
         }
     };
 
@@ -62,7 +66,7 @@ const PlaylistManager: React.FC = () => {
             })));
             fetchPlaylists();
         } catch (err) {
-            alert("Failed to update slides");
+            alert(t('playlists.update_failed'));
         }
     };
 
@@ -97,21 +101,41 @@ const PlaylistManager: React.FC = () => {
         updateSlides(playlist.id, newSlides);
     };
 
-    if (loading) return <div className="text-slate-400">Loading playlists...</div>;
+    const [copiedId, setCopiedId] = useState<number | null>(null);
+
+    const togglePublicAccess = async (playlist: Playlist) => {
+        try {
+            const formData = new FormData();
+            formData.append('is_public', (!playlist.is_public).toString());
+            await axios.put(`/api/playlists/${playlist.id}`, formData);
+            fetchPlaylists();
+        } catch (err) {
+            alert(t('playlists.update_failed'));
+        }
+    };
+
+    const copyToClipboard = (playlist: Playlist) => {
+        const url = `${window.location.origin}/#/public/${playlist.public_slug}`;
+        navigator.clipboard.writeText(url);
+        setCopiedId(playlist.id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    if (loading) return <div className="text-slate-400">{t('common.loading')}</div>;
 
     return (
         <div className="space-y-12">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Playlists</h3>
-                    <p className="text-slate-400">Sequential content collections for your displays</p>
+                    <h3 className="text-2xl font-bold text-[var(--text-main)] mb-1">{t('playlists.title')}</h3>
+                    <p className="text-slate-400">{t('playlists.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="btn-primary flex items-center gap-2"
                 >
                     <Plus size={18} />
-                    New Playlist
+                    {t('playlists.new')}
                 </button>
             </div>
 
@@ -123,11 +147,11 @@ const PlaylistManager: React.FC = () => {
 
             <SlideSelectionModal
                 isOpen={selectionModalOpen}
+                slides={slides}
                 onClose={() => {
                     setSelectionModalOpen(false);
                     setTargetPlaylist(null);
                 }}
-                slides={slides}
                 onSelect={(slideId) => {
                     if (targetPlaylist) {
                         addSlideToPlaylist(targetPlaylist, slideId);
@@ -138,19 +162,30 @@ const PlaylistManager: React.FC = () => {
             <div className="grid grid-cols-1 gap-6">
                 {playlists.length === 0 ? (
                     <div className="text-slate-500 italic py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                        No playlists created yet.
+                        {t('playlists.no_playlists')}
                     </div>
                 ) : (
                     playlists.map((playlist) => (
-                        <div key={playlist.id} className="glass-card p-6 group hover:border-indigo-500/30 transition-all">
+                        <div key={playlist.id} className="glass-card p-6 group hover:border-indigo-500/30 transition-all" style={{ backgroundColor: 'var(--bg-card)' }}>
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
                                         <PlaySquare size={26} />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-white text-xl">{playlist.name}</h4>
-                                        <p className="text-sm text-slate-500">{(playlist.slides || []).length} slides • Total duration: {(playlist.slides || []).reduce((acc, s) => acc + s.duration, 0)}s</p>
+                                        <h4 className="font-bold text-[var(--text-main)] text-xl">{playlist.name}</h4>
+                                        <div className="flex items-center gap-3">
+                                            <p className="text-sm text-slate-500">{(playlist.slides || []).length} {t('playlists.slides_count')} â€¢ {t('playlists.total_duration')}: {(playlist.slides || []).reduce((acc, s) => acc + s.duration, 0)}s</p>
+                                            {playlist.groups?.length > 0 && (
+                                                <div className="flex gap-1">
+                                                    {playlist.groups.map((g: any) => (
+                                                        <span key={g.id} className="text-[10px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-bold uppercase tracking-wider">
+                                                            {g.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -163,10 +198,51 @@ const PlaylistManager: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Public Access Section */}
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 py-4 px-4 bg-[var(--sidebar-hover)] border border-[var(--border-subtle)] rounded-2xl mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${playlist.is_public ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-500'}`}>
+                                        <Share2 size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-[var(--text-main)]">{t('playlists.public_access')}</p>
+                                        <p className="text-[10px] text-slate-500 font-medium">{t('playlists.share_hint')}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 w-full md:w-auto">
+                                    {playlist.is_public && (
+                                        <div className="flex-1 md:flex-initial flex items-center gap-2 bg-[var(--bg-main)] px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] min-w-0">
+                                            <span className="text-[10px] text-slate-400 font-medium truncate">.../#public/{playlist.public_slug}</span>
+                                            <button
+                                                onClick={() => copyToClipboard(playlist)}
+                                                className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                                            >
+                                                {copiedId === playlist.id ? <Check size={14} /> : <Copy size={14} />}
+                                            </button>
+                                            <a
+                                                href={`/#public/${playlist.public_slug}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-slate-500 hover:text-[var(--text-main)] transition-colors"
+                                            >
+                                                <ExternalLink size={14} />
+                                            </a>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => togglePublicAccess(playlist)}
+                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${playlist.is_public ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                                    >
+                                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${playlist.is_public ? 'translate-x-5' : 'translate-x-0'}`} />
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="space-y-3">
-                                <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
+                                <div className="bg-[var(--sidebar-hover)] rounded-2xl p-4 border border-[var(--border-subtle)]">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h5 className="text-xs font-bold uppercase tracking-widest text-slate-500">Timeline</h5>
+                                        <h5 className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('playlists.timeline')}</h5>
                                         <button
                                             onClick={() => {
                                                 setTargetPlaylist(playlist);
@@ -175,7 +251,7 @@ const PlaylistManager: React.FC = () => {
                                             className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-lg transition-all"
                                         >
                                             <Plus size={14} />
-                                            Add Slide
+                                            {t('playlists.add_slide')}
                                         </button>
                                     </div>
 
@@ -200,7 +276,7 @@ const PlaylistManager: React.FC = () => {
                                                                 <div className="flex flex-col items-center gap-1">
                                                                     <Video className="text-slate-700" size={24} />
                                                                     {slide.processing_status === 'processing' && (
-                                                                        <span className="text-[8px] text-indigo-400 font-bold animate-pulse">PROCESSING</span>
+                                                                        <span className="text-[8px] text-indigo-400 font-bold animate-pulse">{t('slides.processing')}</span>
                                                                     )}
                                                                 </div>
                                                             ) : slide.type === 'webpage' ? (
@@ -216,8 +292,8 @@ const PlaylistManager: React.FC = () => {
                                                                 {slide.name || `Slide #${ps.slide_id}`}
                                                             </div>
                                                             <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                                                                <span className="bg-white/5 px-1.5 py-0.5 rounded italic">{slide.type}</span>
-                                                                <span className="text-slate-700">•</span>
+                                                                <span className="bg-white/5 px-1.5 py-0.5 rounded italic">{t(`slides.types.${slide.type}`)}</span>
+                                                                <span className="text-slate-700">â€¢</span>
                                                                 <span>ID {ps.slide_id}</span>
                                                             </div>
                                                         </div>
@@ -232,7 +308,7 @@ const PlaylistManager: React.FC = () => {
                                                                     onChange={(e) => updateSlideDuration(playlist, idx, parseInt(e.target.value))}
                                                                     className="bg-transparent text-sm text-indigo-400 font-black w-10 outline-none text-right"
                                                                 />
-                                                                <span className="text-[10px] text-slate-600 font-black uppercase">sec</span>
+                                                                <span className="text-[10px] text-slate-600 font-black uppercase">s</span>
                                                             </div>
                                                         </div>
 
@@ -267,7 +343,7 @@ const PlaylistManager: React.FC = () => {
                                         </div>
                                     ) : (
                                         <div className="text-slate-600 text-sm italic text-center py-6 border border-dashed border-white/5 rounded-xl">
-                                            No content in this playlist. Start by adding a slide above.
+                                            {t('playlists.no_content')}
                                         </div>
                                     )}
                                 </div>

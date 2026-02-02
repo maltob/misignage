@@ -29,6 +29,7 @@ type User struct {
 	PasswordHash   string         `json:"-"`
 	Role           string         `json:"role"` // admin, manager, viewer
 	OrganizationID uint           `json:"organization_id"`
+	Groups         []Group        `gorm:"many2many:user_groups;" json:"groups"`
 }
 
 type Group struct {
@@ -41,6 +42,21 @@ type Group struct {
 	Displays       []Display      `gorm:"many2many:group_displays;" json:"displays"`
 	Playlists      []Playlist     `gorm:"many2many:group_playlists;" json:"playlists"`
 	Slides         []Slide        `gorm:"many2many:group_slides;" json:"slides"`
+	Schedules      []Schedule     `gorm:"many2many:schedule_groups;" json:"schedules"`
+}
+
+type SlideTemplate struct {
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+	Name           string         `json:"name"`
+	HTML           string         `gorm:"type:text" json:"html"`
+	CSS            string         `gorm:"type:text" json:"css"`
+	JS             string         `gorm:"type:text" json:"js"`
+	Variables      string         `gorm:"type:text" json:"variables"` // JSON schema/metadata
+	ThumbURL       string         `json:"thumb_url"`
+	OrganizationID uint           `json:"organization_id"`
 }
 
 type Display struct {
@@ -61,6 +77,9 @@ type Display struct {
 	OrganizationID   uint           `json:"organization_id"`
 	Organization     *Organization  `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
 	Groups           []Group        `gorm:"many2many:group_displays;" json:"groups"`
+	Schedules        []Schedule     `gorm:"many2many:schedule_displays;" json:"schedules"`
+	ScreenshareCode  string         `json:"screenshare_code,omitempty"` // Current active pairing code
+	ScreenshareLimit int            `json:"screenshare_limit"`          // Max session length in min
 }
 
 type Slide struct {
@@ -81,6 +100,9 @@ type Slide struct {
 	RenderDelay      int            `json:"render_delay"`    // In seconds, wait time before capture
 	WebScript        string         `gorm:"type:text" json:"web_script"`
 	OrganizationID   uint           `json:"organization_id"`
+	Groups           []Group        `gorm:"many2many:group_slides;" json:"groups"`
+	IsScreenshare    bool           `json:"is_screenshare"` // If true, this slide IS a screenshare target
+	OIDCRequired     bool           `json:"oidc_required"`  // Force OIDC even if guest is disabled org-wide
 }
 
 type Playlist struct {
@@ -89,6 +111,8 @@ type Playlist struct {
 	UpdatedAt      time.Time       `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt  `gorm:"index" json:"-"`
 	Name           string          `json:"name"`
+	IsPublic       bool            `json:"is_public"`
+	PublicSlug     string          `gorm:"index" json:"public_slug"`
 	OrganizationID uint            `json:"organization_id"`
 	Slides         []PlaylistSlide `json:"slides"`
 	Groups         []Group         `gorm:"many2many:group_playlists;" json:"groups"`
@@ -134,4 +158,30 @@ type SystemLog struct {
 	Entity    string `json:"entity,omitempty"` // USER, SLIDE, etc.
 	EntityID  uint   `json:"entity_id,omitempty"`
 	IPAddress string `json:"ip_address,omitempty"`
+}
+
+type APIKey struct {
+	ID             uint       `gorm:"primaryKey" json:"id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	Name           string     `json:"name"`
+	Key            string     `gorm:"uniqueIndex" json:"-"` // Hashed key, hidden from JSON
+	Prefix         string     `json:"prefix"`               // First 8 chars for identification
+	OrganizationID uint       `json:"organization_id"`
+	UserID         uint       `json:"user_id"`
+	LastUsedAt     *time.Time `json:"last_used_at"`
+	ExpiresAt      *time.Time `json:"expires_at"`
+}
+
+type ScreenshareSession struct {
+	ID             uint        `gorm:"primaryKey" json:"id"`
+	CreatedAt      time.Time   `json:"created_at"`
+	EndedAt        *time.Time  `json:"ended_at,omitempty"`
+	Code           string      `gorm:"index" json:"code"`
+	DisplayID      uint        `json:"display_id"`
+	SlideID        *uint       `json:"slide_id,omitempty"` // If triggered via a slide
+	UserID         *uint       `json:"user_id,omitempty"`  // If authenticated via OIDC
+	GuestName      string      `json:"guest_name,omitempty"`
+	OrganizationID uint        `json:"organization_id"`
+	IsActive       bool        `gorm:"default:true" json:"is_active"`
+	SignalChannel  chan string `gorm:"-" json:"-"` // For live signaling bridge
 }
