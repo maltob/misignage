@@ -14,5 +14,10 @@ services:
       - DB_TYPE=sqlite
       - DB_DSN=/app/data/misignage.db
       - BOOTSTRAP_USER_EMAIL=admin@example.com
-      # - BOOTSTRAP_USER_PASSWORD=your_secure_password
+      # - BOOTSTRAP_USER_PASSWORD=thee_secure_password
+      # - SESSION_SECRET=thee_secret_key
+      # - BASE_URL=https://misignage.yourdomain.example
+      # - OIDC_CLIENT_ID=your_client_id
+      # - OIDC_CLIENT_SECRET=your_client_secret
+      # - OIDC_DISCOVERY_URL=https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
     restart: unless-stopped

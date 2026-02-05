@@ -145,6 +145,14 @@
             "webpage": "Pagina Web",
             "table": "Tabella",
             "screenshare": "Condivisione Schermo"
+        },
+        "url_label": "URL del sito web",
+        "render_options": {
+            "use_proxy": "Usa Proxy / Servizio di Rendering",
+            "proxy_desc": "Renderizza la pagina web sul server (browser headless) e servila come immagine. Utile per siti interni o dashboard complesse.",
+            "interval": "Intervallo di aggiornamento",
+            "delay": "Ritardo di rendering",
+            "script": "Script di iniezione"
         }
     },
     "users": {

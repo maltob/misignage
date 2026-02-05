@@ -190,6 +190,18 @@ func processWebpageTask(slide *models.Slide) {
 	absPath, _ := filepath.Abs(thumbPath)
 	os.MkdirAll("uploads", 0755)
 
+	// Check for Chrome/Chromium availability
+	hasChrome := false
+	for _, app := range []string{"chromium", "chromium-browser", "google-chrome", "google-chrome-stable"} {
+		if _, err := exec.LookPath(app); err == nil {
+			hasChrome = true
+			break
+		}
+	}
+	if !hasChrome {
+		util.LogInfof(slide.OrganizationID, "worker", slide.ID, "WARNING: Chrome/Chromium not found in PATH. Web render may fail if not found by chromedp auto-discovery.")
+	}
+
 	// Setup chromedp
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.WindowSize(1920, 1080),

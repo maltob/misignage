@@ -31,7 +31,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache ca-certificates tzdata ffmpeg
+RUN apk add --no-cache ca-certificates tzdata ffmpeg chromium nss freetype harfbuzz ttf-freefont
 
 # Copy binary from builder
 COPY --from=backend-builder /app/backend/misignage ./

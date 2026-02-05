@@ -3,9 +3,12 @@ package main
 import (
 	"embed"
 	"flag"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
+
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -24,6 +27,9 @@ func main() {
 	flag.Parse()
 	util.DebugMode = *debugFlag
 
+	// Frontend Embedding
+	distFs, _ := fs.Sub(frontendDist, "dist")
+
 	db.InitDB()
 	db.Bootstrap()
 	storage.InitStorage()
@@ -38,7 +44,31 @@ func main() {
 	e.Use(middleware.CORS())
 
 	// Public Routes
-	e.POST("/login", handlers.Login)
+	e.GET("/login", func(c echo.Context) error {
+		content, err := fs.ReadFile(distFs, "index.html")
+		if err != nil {
+			return err
+		}
+		return c.HTML(http.StatusOK, string(content))
+	})
+	e.POST("/login", func(c echo.Context) error {
+		// Check if this is a form post with a token (OIDC callback)
+		if c.Request().Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
+			token := c.FormValue("token")
+			if token != "" {
+				content, err := fs.ReadFile(distFs, "index.html")
+				if err != nil {
+					return err
+				}
+				html := string(content)
+				// Inject token into HTML
+				script := fmt.Sprintf("<script>window.INITIAL_TOKEN = '%s';</script>", token)
+				html = strings.Replace(html, "<head>", "<head>"+script, 1)
+				return c.HTML(http.StatusOK, html)
+			}
+		}
+		return handlers.Login(c)
+	})
 	e.POST("/register", handlers.Register)
 	e.POST("/api/displays/register", handlers.RegisterDisplay)
 	e.POST("/api/displays/login", handlers.LoginDisplay)
@@ -147,9 +177,6 @@ func main() {
 	e.File("/openapi.yaml", "docs/openapi.yaml")
 	e.File("/openapi.yml", "docs/openapi.yaml")
 	e.GET("/docs", handlers.ServeDocs)
-
-	// Frontend Embedding
-	distFs, _ := fs.Sub(frontendDist, "dist")
 
 	// Support legacy /player route by redirecting to Hash route
 	e.GET("/player", func(c echo.Context) error {

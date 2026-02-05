@@ -345,6 +345,79 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                                         />
                                     </div>
                                 </div>
+                            ) : type === 'webpage' ? (
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-[var(--text-muted)]">{t('slides.url_label')}</label>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-[var(--sidebar-hover)] border border-[var(--border-subtle)] flex items-center justify-center text-slate-500">
+                                                <Globe size={18} />
+                                            </div>
+                                            <input
+                                                type="url"
+                                                value={content}
+                                                onChange={(e) => setContent(e.target.value)}
+                                                className="flex-1 input-field font-mono text-sm"
+                                                placeholder="https://example.com"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-[var(--sidebar-hover)] rounded-xl border border-[var(--border-subtle)] space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-[var(--text-main)]">{t('slides.render_options.use_proxy')}</span>
+                                                <span className="text-[10px] text-slate-500 uppercase tracking-tighter">{t('slides.render_options.proxy_desc')}</span>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" checked={renderWebpage} onChange={(e) => setRenderWebpage(e.target.checked)} className="sr-only peer" />
+                                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            </label>
+                                        </div>
+
+                                        {renderWebpage && (
+                                            <>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.interval')}</label>
+                                                        <select
+                                                            value={renderInterval}
+                                                            onChange={(e) => setRenderInterval(Number(e.target.value))}
+                                                            className="w-full input-field text-sm"
+                                                        >
+                                                            {PRESET_INTERVALS.map(sec => (
+                                                                <option key={sec} value={sec}>{formatInterval(sec)}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.delay')}</label>
+                                                        <select
+                                                            value={renderDelay}
+                                                            onChange={(e) => setRenderDelay(Number(e.target.value))}
+                                                            className="w-full input-field text-sm"
+                                                        >
+                                                            {PRESET_DELAYS.map(sec => (
+                                                                <option key={sec} value={sec}>{sec}s</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.script')}</label>
+                                                    <textarea
+                                                        value={webScript}
+                                                        onChange={(e) => setWebScript(e.target.value)}
+                                                        className="w-full input-field font-mono text-xs min-h-[80px]"
+                                                        placeholder="// JavaScript to run on page load..."
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-[var(--text-muted)]">{t('modals.slide_creation.content_label')}</label>

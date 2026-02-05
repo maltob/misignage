@@ -87,6 +87,7 @@ func CreateSlide(c echo.Context) error {
 	}
 
 	if slide.ProcessingStatus == "pending" {
+		util.LogInfof(slide.OrganizationID, "slide", slide.ID, "Queueing immediate processing for slide %d (%s)", slide.ID, slide.Type)
 		QueueProcessingTask(slide.ID)
 	}
 

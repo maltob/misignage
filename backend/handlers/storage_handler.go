@@ -36,7 +36,7 @@ func GetStorageFiles(c echo.Context) error {
 	}
 
 	usedFiles := getUsedFilesMap()
-	var result []FileInfo
+	result := []FileInfo{}
 
 	for _, f := range files {
 		if f.IsDir() {

@@ -95,8 +95,8 @@ const TemplateManager: React.FC = () => {
         <div className="space-y-12">
             <div className="flex justify-between items-end">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-1 text-premium-glow">{t('templates.title')}</h3>
-                    <p className="text-slate-400">{t('templates.subtitle')}</p>
+                    <h3 className="text-2xl font-bold text-[var(--text-main)] mb-1 text-premium-glow">{t('templates.title')}</h3>
+                    <p className="text-slate-500 font-medium">{t('templates.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => {
@@ -119,7 +119,7 @@ const TemplateManager: React.FC = () => {
                                 <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400">
                                     <Code size={20} />
                                 </div>
-                                <h4 className="font-bold text-white text-lg">{template.name}</h4>
+                                <h4 className="font-bold text-[var(--text-main)] text-lg">{template.name}</h4>
                             </div>
                             <button
                                 onClick={() => deleteTemplate(template.id)}
@@ -141,8 +141,9 @@ const TemplateManager: React.FC = () => {
                                     });
                                     setIsModalOpen(true);
                                 }}
-                                className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white text-xs font-bold uppercase tracking-wider border border-white/5 transition-all"
+                                className="flex-1 py-2 bg-indigo-500/10 hover:bg-indigo-500 hover:text-white rounded-xl text-indigo-500 text-xs font-bold uppercase tracking-wider border border-indigo-500/20 transition-all flex items-center justify-center gap-2"
                             >
+                                <Settings2 size={16} />
                                 {t('templates.edit_button')}
                             </button>
                         </div>
@@ -151,21 +152,21 @@ const TemplateManager: React.FC = () => {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-slate-900/90 backdrop-blur-md">
-                    <div className="modal-card w-full max-w-[95vw] h-full max-h-full flex flex-col overflow-hidden animate-in zoom-in duration-200 border border-white/10 shadow-2xl">
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/50 backdrop-blur-md">
+                    <div className="modal-card w-full max-w-[95vw] h-full max-h-full flex flex-col overflow-hidden animate-in zoom-in duration-200 border border-[var(--border-subtle)] shadow-2xl bg-[var(--bg-card)]">
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-card)]">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
                                     <Code size={18} />
                                 </div>
-                                <h4 className="text-xl font-bold text-white">
+                                <h4 className="text-xl font-bold text-[var(--text-main)]">
                                     {editingTemplate ? t('templates.modal.edit_title') : t('templates.modal.new_title')}
                                 </h4>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="ml-4 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-indigo-500 transition-all font-bold text-sm min-w-[300px]"
+                                    className="ml-4 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl px-4 py-2 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all font-bold text-sm min-w-[300px]"
                                     placeholder={t('templates.modal.name_placeholder')}
                                 />
                             </div>
@@ -174,7 +175,7 @@ const TemplateManager: React.FC = () => {
                                     <Save size={16} />
                                     {t('templates.modal.save_button')}
                                 </button>
-                                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all">
+                                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-[var(--glass-border)] rounded-full text-slate-400 hover:text-[var(--text-main)] transition-all">
                                     <X size={24} />
                                 </button>
                             </div>
@@ -182,14 +183,14 @@ const TemplateManager: React.FC = () => {
 
                         <div className="flex-1 flex overflow-hidden">
                             {/* Editor Pane */}
-                            <div className="w-1/2 flex flex-col border-r border-white/5 bg-slate-900/20">
-                                <div className="flex border-b border-white/5 bg-slate-900/30">
+                            <div className="w-1/2 flex flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-main)]">
+                                <div className="flex border-b border-[var(--border-subtle)] bg-[var(--bg-card)]">
                                     {(['html', 'css', 'js', 'variables'] as const).map(tab => (
                                         <button
                                             key={tab}
                                             type="button"
                                             onClick={() => setActiveTab(tab)}
-                                            className={`px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
+                                            className={`px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab ? 'text-indigo-500 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-600'}`}
                                         >
                                             {tab === 'variables' ? t('templates.modal.tabs.variables') : t(`templates.modal.tabs.${tab}`)}
                                             {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
@@ -200,7 +201,7 @@ const TemplateManager: React.FC = () => {
                                     <textarea
                                         value={(formData as any)[activeTab]}
                                         onChange={(e) => setFormData({ ...formData, [activeTab]: e.target.value })}
-                                        className="w-full h-full bg-slate-950/30 p-6 text-slate-300 font-mono text-sm border-none outline-none resize-none leading-relaxed"
+                                        className="w-full h-full bg-[var(--bg-main)] p-6 text-[var(--text-main)] font-mono text-sm border-none outline-none resize-none leading-relaxed"
                                         spellCheck={false}
                                         placeholder={t('templates.modal.editor_placeholder', { type: activeTab.toUpperCase() })}
                                     />
@@ -209,12 +210,12 @@ const TemplateManager: React.FC = () => {
 
                             {/* Preview Pane */}
                             <div className="w-1/2 bg-[#020617] relative flex flex-col">
-                                <div className="p-3 bg-slate-900/50 border-b border-white/5 flex items-center justify-between">
+                                <div className="p-3 bg-[var(--bg-card)] border-b border-[var(--border-subtle)] flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
                                         <Monitor size={12} className="text-indigo-500" />
                                         {t('templates.modal.preview_title')}
                                     </div>
-                                    <div className="text-[10px] font-bold text-slate-600">{t('templates.modal.preview_scale')}</div>
+                                    <div className="text-[10px] font-bold text-slate-500">{t('templates.modal.preview_scale')}</div>
                                 </div>
                                 <div className="flex-1 relative overflow-hidden bg-black">
                                     <iframe

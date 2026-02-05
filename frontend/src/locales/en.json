@@ -145,6 +145,14 @@
             "webpage": "Webpage",
             "table": "Table",
             "screenshare": "Screenshare"
+        },
+        "url_label": "Website URL",
+        "render_options": {
+            "use_proxy": "Use Proxy / Render Service",
+            "proxy_desc": "Render the webpage on the server (headless browser) and serve as an image. Useful for internal sites or complex dashboards.",
+            "interval": "Refresh Interval",
+            "delay": "Render Delay",
+            "script": "Injection Script"
         }
     },
     "users": {

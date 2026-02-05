@@ -12,12 +12,54 @@ const Login: React.FC = () => {
     const { login } = useAuth();
 
     useEffect(() => {
+        // Check for injected token from POST login
+        const injectedToken = (window as any).INITIAL_TOKEN;
+        if (injectedToken) {
+            handleTokenLogin(injectedToken);
+            // Clean up
+            delete (window as any).INITIAL_TOKEN;
+            return;
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         if (token) {
-            // OIDC callback handling
+            handleTokenLogin(token);
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
-    }, []);
+    }, [login, t]);
+
+    const handleTokenLogin = (token: string) => {
+        try {
+            const user = parseJwt(token);
+            if (user) {
+                const mappedUser = {
+                    id: user.user_id,
+                    email: user.email,
+                    role: user.role,
+                    organization_id: user.organization_id
+                };
+                login(token, mappedUser);
+            }
+        } catch (e) {
+            console.error("Failed to decode token", e);
+            setError(t('login.error_generic'));
+        }
+    }
+
+    const parseJwt = (token: string) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,25 +139,12 @@ const Login: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     <button
-                        onClick={() => handleOIDC('google')}
+                        onClick={() => handleOIDC('openid-connect')}
                         className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--sidebar-hover)] hover:bg-[var(--glass-border)] transition-all text-[var(--text-main)] font-bold text-sm"
                     >
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                        Google
-                    </button>
-                    <button
-                        onClick={() => handleOIDC('microsoftonline')}
-                        className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--sidebar-hover)] hover:bg-[var(--glass-border)] transition-all text-[var(--text-main)] font-bold text-sm"
-                    >
-                        <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
-                            <div className="bg-[#f25022]"></div>
-                            <div className="bg-[#7fba00]"></div>
-                            <div className="bg-[#00a4ef]"></div>
-                            <div className="bg-[#ffb900]"></div>
-                        </div>
-                        Microsoft
+                        SSO
                     </button>
                 </div>
             </div>
