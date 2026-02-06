@@ -72,7 +72,9 @@
             "claim_fail": "Código de registro no válido o pantalla ya reclamada.",
             "update_fail": "Error al actualizar la pantalla",
             "delete_fail": "Error al eliminar la pantalla"
-        }
+        },
+        "active_pairing": "Permitir emparejamiento de invitados",
+        "active_pairing_desc": "Mostrar código de emparejamiento en pantalla para conexión directa de invitados"
     },
     "schedules": {
         "list_title": "Programaciones de emisión",

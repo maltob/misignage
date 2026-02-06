@@ -137,12 +137,12 @@ const GroupManager: React.FC = () => {
             {isManageModalOpen && selectedGroup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
                     <div className="modal-card w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in duration-200">
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-card)]">
                             <div>
-                                <h4 className="text-xl font-bold text-white">{selectedGroup.name}</h4>
+                                <h4 className="text-xl font-bold text-[var(--text-main)]">{selectedGroup.name}</h4>
                                 <p className="text-xs text-slate-400 mt-1">{t('groups.manage_subtitle')}</p>
                             </div>
-                            <button onClick={() => setIsManageModalOpen(false)} className="p-2 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all">
+                            <button onClick={() => setIsManageModalOpen(false)} className="p-2 hover:bg-[var(--sidebar-hover)] rounded-full text-slate-400 hover:text-[var(--text-main)] transition-all">
                                 <X size={20} />
                             </button>
                         </div>
@@ -160,9 +160,9 @@ const GroupManager: React.FC = () => {
                                             <div
                                                 key={display.id}
                                                 onClick={() => toggleAssociation(selectedGroup.id, 'display', display.id, isAssociated)}
-                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/item ${isAssociated ? 'bg-indigo-500/10 border-indigo-500/30 text-white' : 'bg-slate-900/50 border-white/5 text-slate-500 hover:border-white/10'}`}
+                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/item ${isAssociated ? 'bg-indigo-500/10 border-indigo-500/30 text-[var(--text-main)]' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-slate-500 hover:border-indigo-500/30'}`}
                                             >
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isAssociated ? 'bg-indigo-500 text-white font-bold' : 'bg-slate-800 text-slate-600 group-hover/item:bg-slate-700'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isAssociated ? 'bg-indigo-500 text-white font-bold' : 'bg-[var(--sidebar-hover)] text-slate-600 group-hover/item:bg-[var(--border-subtle)]'}`}>
                                                     <Monitor size={18} />
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
@@ -187,9 +187,9 @@ const GroupManager: React.FC = () => {
                                             <div
                                                 key={playlist.id}
                                                 onClick={() => toggleAssociation(selectedGroup.id, 'playlist', playlist.id, isAssociated)}
-                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/item ${isAssociated ? 'bg-emerald-500/10 border-emerald-500/30 text-white' : 'bg-slate-900/50 border-white/5 text-slate-500 hover:border-white/10'}`}
+                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/item ${isAssociated ? 'bg-emerald-500/10 border-emerald-500/30 text-[var(--text-main)]' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-slate-500 hover:border-emerald-500/30'}`}
                                             >
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isAssociated ? 'bg-emerald-500 text-white font-bold' : 'bg-slate-800 text-slate-600 group-hover/item:bg-slate-700'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isAssociated ? 'bg-emerald-500 text-white font-bold' : 'bg-[var(--sidebar-hover)] text-slate-600 group-hover/item:bg-[var(--border-subtle)]'}`}>
                                                     <PlaySquare size={18} />
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
@@ -203,8 +203,8 @@ const GroupManager: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-white/5 bg-slate-900/50">
-                            <button onClick={() => setIsManageModalOpen(false)} className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all border border-white/5">
+                        <div className="p-6 border-t border-[var(--border-subtle)] bg-[var(--bg-card)]">
+                            <button onClick={() => setIsManageModalOpen(false)} className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-[var(--text-main)] hover:bg-[var(--sidebar-hover)] rounded-2xl transition-all border border-[var(--border-subtle)]">
                                 {t('groups.close_management')}
                             </button>
                         </div>

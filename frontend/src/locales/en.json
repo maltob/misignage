@@ -72,7 +72,9 @@
             "claim_fail": "Invalid registration code or display already claimed.",
             "update_fail": "Failed to update display",
             "delete_fail": "Failed to delete display"
-        }
+        },
+        "active_pairing": "Allow Guest Pairing",
+        "active_pairing_desc": "Show a pairing code on the display for guests to connect directly"
     },
     "schedules": {
         "list_title": "Broadcast Schedules",

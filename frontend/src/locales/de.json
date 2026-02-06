@@ -72,7 +72,9 @@
             "claim_fail": "Ungültiger Registrierungscode oder Display bereits beansprucht.",
             "update_fail": "Display konnte nicht aktualisiert werden",
             "delete_fail": "Display konnte nicht gelöscht werden"
-        }
+        },
+        "active_pairing": "Gast-Kopplung erlauben",
+        "active_pairing_desc": "Kopplungscode auf dem Display anzeigen, damit Gäste sich direkt verbinden können"
     },
     "schedules": {
         "list_title": "Sendezeitpläne",

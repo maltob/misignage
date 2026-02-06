@@ -148,7 +148,7 @@ const SettingsManager: React.FC = () => {
                 <div className="flex-1 glass-card p-8 border border-[var(--border-subtle)]" style={{ backgroundColor: 'var(--bg-card)' }}>
                     {activeSection === 'profile' && (
                         <form onSubmit={handleProfileUpdate} className="space-y-6">
-                            <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <h4 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2 mb-4">
                                 <User className="text-indigo-400" />
                                 {t('settings.profile.title')}
                             </h4>
@@ -161,7 +161,7 @@ const SettingsManager: React.FC = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                        className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                     />
                                 </div>
                             </div>
@@ -175,7 +175,7 @@ const SettingsManager: React.FC = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder={t('settings.profile.password_hint')}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                        className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                     />
                                 </div>
                             </div>
@@ -193,7 +193,7 @@ const SettingsManager: React.FC = () => {
 
                     {activeSection === 'organization' && (
                         <form onSubmit={handleOrgUpdate} className="space-y-6">
-                            <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <h4 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2 mb-4">
                                 <Building className="text-indigo-400" />
                                 {t('settings.organization.title')}
                             </h4>
@@ -205,7 +205,7 @@ const SettingsManager: React.FC = () => {
                                     value={orgName}
                                     onChange={(e) => setOrgName(e.target.value)}
                                     disabled={currentUser?.role !== 'admin'}
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-3 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
 
                                 <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 space-y-3">
@@ -309,7 +309,7 @@ const SettingsManager: React.FC = () => {
                                                 onChange={(e) => setOIDCDomain(e.target.value)}
                                                 placeholder={t('settings.organization.oidc_placeholder')}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium"
                                             />
                                             <p className="text-[10px] text-amber-500/80 font-medium italic">
                                                 {t('settings.organization.oidc_hint')}
@@ -341,7 +341,7 @@ const SettingsManager: React.FC = () => {
 
                     {activeSection === 'retention' && (
                         <form onSubmit={handleOrgUpdate} className="space-y-6 animate-in fade-in duration-300">
-                            <h4 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <h4 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2 mb-4">
                                 <Trash2 className="text-indigo-400" />
                                 {t('settings.retention.title')}
                             </h4>
@@ -358,7 +358,7 @@ const SettingsManager: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">{t('settings.retention.storage_title')}</h5>
+                                    <h5 className="font-bold text-[var(--text-main)] text-sm border-b border-[var(--border-subtle)] pb-2">{t('settings.retention.storage_title')}</h5>
 
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.trash')}</label>
@@ -369,7 +369,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.user_upload_retention}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, user_upload_retention: parseInt(e.target.value) })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
@@ -384,7 +384,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.system_upload_retention}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, system_upload_retention: parseInt(e.target.value) })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
@@ -403,7 +403,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.log_retention.audit}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, log_retention: { ...retentionPolicy.log_retention, audit: parseInt(e.target.value) } })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
@@ -418,7 +418,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.log_retention.worker}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, log_retention: { ...retentionPolicy.log_retention, worker: parseInt(e.target.value) } })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
@@ -433,7 +433,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.log_retention.api}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, log_retention: { ...retentionPolicy.log_retention, api: parseInt(e.target.value) } })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>
@@ -448,7 +448,7 @@ const SettingsManager: React.FC = () => {
                                                 value={retentionPolicy.log_retention.burp}
                                                 onChange={(e) => setRetentionPolicy({ ...retentionPolicy, log_retention: { ...retentionPolicy.log_retention, burp: parseInt(e.target.value) } })}
                                                 disabled={currentUser?.role !== 'admin'}
-                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all font-medium"
                                             />
                                             <span className="text-sm text-slate-400 font-bold w-12">{t('settings.retention.days')}</span>
                                         </div>

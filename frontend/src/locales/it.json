@@ -72,7 +72,9 @@
             "claim_fail": "Codice di registrazione non valido o schermo già rivendicato.",
             "update_fail": "Impossibile aggiornare lo schermo",
             "delete_fail": "Impossibile eliminare lo schermo"
-        }
+        },
+        "active_pairing": "Consenti accoppiamento ospiti",
+        "active_pairing_desc": "Mostra un codice di accoppiamento sul display per la connessione diretta degli ospiti"
     },
     "schedules": {
         "list_title": "Programmazioni Broadcast",
