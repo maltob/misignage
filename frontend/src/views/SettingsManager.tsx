@@ -215,7 +215,7 @@ const SettingsManager: React.FC = () => {
                                                 <Settings size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.enable_ocr')}</p>
+                                                <p className="text-sm font-bold text-[var(--text-main)] leading-tight">{t('settings.organization.enable_ocr')}</p>
                                                 <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.ocr_desc')}</p>
                                             </div>
                                         </div>
@@ -249,7 +249,7 @@ const SettingsManager: React.FC = () => {
                                 <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.screenshots')}</p>
+                                            <p className="text-sm font-bold text-[var(--text-main)] leading-tight">{t('settings.organization.screenshots')}</p>
                                             <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.screenshots_desc')}</p>
                                         </div>
                                         <div className="text-right">
@@ -284,7 +284,7 @@ const SettingsManager: React.FC = () => {
                                                 <Shield size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-white leading-tight">{t('settings.organization.oidc_title')}</p>
+                                                <p className="text-sm font-bold text-[var(--text-main)] leading-tight">{t('settings.organization.oidc_title')}</p>
                                                 <p className="text-[10px] text-slate-400 font-medium">{t('settings.organization.oidc_desc')}</p>
                                             </div>
                                         </div>
@@ -392,7 +392,7 @@ const SettingsManager: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h5 className="font-bold text-white text-sm border-b border-white/10 pb-2">{t('settings.retention.logs_title')}</h5>
+                                    <h5 className="font-bold text-[var(--text-main)] text-sm border-b border-[var(--border-subtle)] pb-2">{t('settings.retention.logs_title')}</h5>
 
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.retention.audit')}</label>
