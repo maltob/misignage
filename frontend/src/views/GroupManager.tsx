@@ -123,7 +123,7 @@ const GroupManager: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-end">
                             <div className="text-sm text-slate-500 font-medium">
-                                {group.displays?.length || 0} {t('common.displays')} â€¢ {group.playlists?.length || 0} {t('common.playlists')}
+                                {group.displays?.length || 0} {t('common.displays')} • {group.playlists?.length || 0} {t('common.playlists')}
                             </div>
                             <div className="p-2 bg-white/5 rounded-lg text-slate-500 group-hover:text-indigo-400 transition-colors">
                                 <ChevronRight size={18} />

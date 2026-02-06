@@ -330,7 +330,7 @@ const PlaylistManager: React.FC = () => {
                                                             </div>
                                                             <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                                                                 <span className="bg-[var(--bg-card)] px-1.5 py-0.5 rounded italic border border-[var(--border-subtle)]">{t(`slides.types.${slide.type}`)}</span>
-                                                                <span className="text-slate-700">â€¢</span>
+                                                                <span className="text-slate-700">•</span>
                                                                 <span>ID {ps.slide_id}</span>
                                                             </div>
                                                         </div>

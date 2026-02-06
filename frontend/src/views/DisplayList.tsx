@@ -196,7 +196,7 @@ const DisplayList: React.FC = () => {
                                         </div>
                                         <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
                                             <span>IP: {d.ip_address || 'Unknown'}</span>
-                                            <span>â€¢</span>
+                                            <span>•</span>
                                             <span className="text-amber-500/80 font-mono font-bold tracking-widest">Code: {d.registration_code}</span>
                                         </div>
                                     </div>
@@ -242,9 +242,9 @@ const DisplayList: React.FC = () => {
                                                 <Clock size={14} />
                                                 {display.last_seen ? new Date(display.last_seen).toLocaleString() : t('displays.never_seen')}
                                             </span>
-                                            <span>â€¢</span>
+                                            <span>•</span>
                                             <span>{display.size || t('displays.unknown_size')}</span>
-                                            <span>â€¢</span>
+                                            <span>•</span>
                                             <span className="font-mono text-xs opacity-50">{display.ip_address}</span>
                                         </div>
                                         {(display.groups?.length ?? 0) > 0 && (
