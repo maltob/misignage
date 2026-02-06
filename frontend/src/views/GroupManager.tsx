@@ -53,7 +53,10 @@ const GroupManager: React.FC = () => {
             await axios.post('/api/groups', { name: newGroupName });
             setNewGroupName('');
             fetchGroups();
-        } catch (err) { }
+        } catch (err) {
+            console.error("Failed to create group", err);
+            alert("Failed to create group");
+        }
     };
 
     const deleteGroup = async (id: number) => {
@@ -80,7 +83,7 @@ const GroupManager: React.FC = () => {
     return (
         <div className="space-y-12">
             <div>
-                <h3 className="text-2xl font-bold text-white mb-1 text-premium-glow">{t('groups.title')}</h3>
+                <h3 className="text-2xl font-bold text-[var(--text-main)] mb-1 text-premium-glow">{t('groups.title')}</h3>
                 <p className="text-slate-400">{t('groups.subtitle')}</p>
             </div>
 
@@ -90,7 +93,7 @@ const GroupManager: React.FC = () => {
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder={t('groups.placeholder')}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-indigo-500 transition-all"
+                    className="flex-1 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl px-6 py-4 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all font-bold"
                 />
                 <button
                     onClick={createGroup}
@@ -103,13 +106,13 @@ const GroupManager: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {groups.map(group => (
-                    <div key={group.id} className="glass-card p-6 group hover:border-indigo-500/30 transition-all cursor-pointer" onClick={() => { setSelectedGroup(group); setIsManageModalOpen(true); }}>
+                    <div key={group.id} className="glass-card p-6 group hover:border-indigo-500/30 transition-all cursor-pointer" style={{ backgroundColor: 'var(--bg-card)' }} onClick={() => { setSelectedGroup(group); setIsManageModalOpen(true); }}>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400">
                                     <Users size={20} />
                                 </div>
-                                <h4 className="font-bold text-white text-lg">{group.name}</h4>
+                                <h4 className="font-bold text-[var(--text-main)] text-lg">{group.name}</h4>
                             </div>
                             <button
                                 onClick={(e) => { e.stopPropagation(); deleteGroup(group.id); }}

@@ -265,9 +265,9 @@ const PlaylistManager: React.FC = () => {
                                                 } catch (e) { }
 
                                                 return (
-                                                    <div key={ps.id || idx} className="flex items-center gap-4 bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 p-2 pr-4 rounded-xl transition-all group/row">
+                                                    <div key={ps.id || idx} className="flex items-center gap-4 bg-[var(--bg-main)] hover:border-indigo-500/30 border border-[var(--border-subtle)] p-2 pr-4 rounded-xl transition-all group/row">
                                                         {/* Preview Thumbnail */}
-                                                        <div className="w-24 h-14 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-white/5 relative">
+                                                        <div className="w-24 h-14 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border-subtle)] relative">
                                                             {slide.thumbnail_url ? (
                                                                 <img src={slide.thumbnail_url} className="w-full h-full object-cover" alt="" />
                                                             ) : slide.type === 'image' && content.url ? (
@@ -288,11 +288,11 @@ const PlaylistManager: React.FC = () => {
 
                                                         {/* Name and Info */}
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="text-base font-bold text-white truncate group-hover/row:text-indigo-400 transition-colors">
+                                                            <div className="text-base font-bold text-[var(--text-main)] truncate group-hover/row:text-indigo-400 transition-colors">
                                                                 {slide.name || `Slide #${ps.slide_id}`}
                                                             </div>
                                                             <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                                                                <span className="bg-white/5 px-1.5 py-0.5 rounded italic">{t(`slides.types.${slide.type}`)}</span>
+                                                                <span className="bg-[var(--bg-card)] px-1.5 py-0.5 rounded italic border border-[var(--border-subtle)]">{t(`slides.types.${slide.type}`)}</span>
                                                                 <span className="text-slate-700">â€¢</span>
                                                                 <span>ID {ps.slide_id}</span>
                                                             </div>

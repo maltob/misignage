@@ -232,7 +232,7 @@ const DisplayList: React.FC = () => {
                                                     <input
                                                         value={newName}
                                                         onChange={(e) => setNewName(e.target.value)}
-                                                        className="bg-white/10 border border-white/20 rounded px-2 py-1 text-white font-bold"
+                                                        className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded px-2 py-1 text-[var(--text-main)] font-bold shadow-inner"
                                                         autoFocus
                                                     />
                                                     <button onClick={saveEdit} className="text-emerald-500 hover:text-emerald-400"><CheckCircle size={18} /></button>
