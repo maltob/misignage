@@ -375,7 +375,8 @@ func UpdateDisplay(c echo.Context) error {
 	}
 
 	req := struct {
-		Name string `json:"name"`
+		Name              string `json:"name"`
+		AllowLocalPairing *bool  `json:"allow_local_pairing"`
 	}{}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
@@ -383,6 +384,9 @@ func UpdateDisplay(c echo.Context) error {
 
 	if req.Name != "" {
 		display.Name = req.Name
+	}
+	if req.AllowLocalPairing != nil {
+		display.AllowLocalPairing = *req.AllowLocalPairing
 	}
 
 	if err := db.DB.Save(&display).Error; err != nil {

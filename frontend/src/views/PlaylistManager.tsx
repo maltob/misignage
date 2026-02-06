@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Plus, PlaySquare, Trash2, Clock, ChevronUp, ChevronDown, Video, Globe, Share2, ExternalLink, Check, Copy } from 'lucide-react';
+import { Plus, PlaySquare, Trash2, Clock, ChevronUp, ChevronDown, Video, Globe, Share2, ExternalLink, Check, Copy, Pencil, X, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import PlaylistCreationModal from '../components/PlaylistCreationModal';
 import SlideSelectionModal from '../components/SlideSelectionModal';
@@ -22,6 +22,10 @@ const PlaylistManager: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectionModalOpen, setSelectionModalOpen] = useState(false);
     const [targetPlaylist, setTargetPlaylist] = useState<Playlist | null>(null);
+
+    // Edit Name State
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editName, setEditName] = useState("");
 
     useEffect(() => {
         fetchPlaylists();
@@ -114,6 +118,23 @@ const PlaylistManager: React.FC = () => {
         }
     };
 
+    const startEditing = (playlist: Playlist) => {
+        setEditingId(playlist.id);
+        setEditName(playlist.name);
+    };
+
+    const saveName = async (id: number) => {
+        try {
+            const formData = new FormData();
+            formData.append('name', editName);
+            await axios.put(`/api/playlists/${id}`, formData);
+            setEditingId(null);
+            fetchPlaylists();
+        } catch (err) {
+            alert(t('playlists.update_failed'));
+        }
+    };
+
     const copyToClipboard = (playlist: Playlist) => {
         const url = `${window.location.origin}/#/public/${playlist.public_slug}`;
         navigator.clipboard.writeText(url);
@@ -173,9 +194,25 @@ const PlaylistManager: React.FC = () => {
                                         <PlaySquare size={26} />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-[var(--text-main)] text-xl">{playlist.name}</h4>
+                                        {editingId === playlist.id ? (
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <input
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                    className="bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded px-2 py-1 text-[var(--text-main)] font-bold text-lg focus:outline-none focus:border-indigo-500"
+                                                    autoFocus
+                                                />
+                                                <button onClick={() => saveName(playlist.id)} className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded"><Save size={18} /></button>
+                                                <button onClick={() => setEditingId(null)} className="p-1 text-slate-500 hover:bg-slate-500/10 rounded"><X size={18} /></button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 group/name cursor-pointer" onClick={() => startEditing(playlist)}>
+                                                <h4 className="font-bold text-[var(--text-main)] text-xl group-hover/name:text-indigo-400 transition-colors">{playlist.name}</h4>
+                                                <Pencil size={14} className="text-slate-500 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-3">
-                                            <p className="text-sm text-slate-500">{(playlist.slides || []).length} {t('playlists.slides_count')} â€¢ {t('playlists.total_duration')}: {(playlist.slides || []).reduce((acc, s) => acc + s.duration, 0)}s</p>
+                                            <p className="text-sm text-slate-500">{(playlist.slides || []).length} {t('playlists.slides_count')}  {t('playlists.total_duration')}: {(playlist.slides || []).reduce((acc, s) => acc + s.duration, 0)}s</p>
                                             {playlist.groups?.length > 0 && (
                                                 <div className="flex gap-1">
                                                     {playlist.groups.map((g: any) => (

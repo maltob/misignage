@@ -60,26 +60,27 @@ type SlideTemplate struct {
 }
 
 type Display struct {
-	ID               uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt        time.Time      `json:"created_at"`
-	UpdatedAt        time.Time      `json:"updated_at"`
-	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
-	Name             string         `json:"name"`
-	Size             string         `json:"size"`
-	BrowserAgent     string         `json:"browser_agent"`
-	LastSeen         time.Time      `json:"last_seen"`
-	Status           string         `json:"status"` // online, offline, idle
-	RegistrationCode string         `gorm:"index" json:"registration_code"`
-	IPAddress        string         `json:"ip_address"`
-	Approved         bool           `json:"approved"`
-	LastScreenshot   string         `json:"last_screenshot"`
-	Secret           string         `json:"-"` // Hashed secret
-	OrganizationID   uint           `json:"organization_id"`
-	Organization     *Organization  `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
-	Groups           []Group        `gorm:"many2many:group_displays;" json:"groups"`
-	Schedules        []Schedule     `gorm:"many2many:schedule_displays;" json:"schedules"`
-	ScreenshareCode  string         `json:"screenshare_code,omitempty"` // Current active pairing code
-	ScreenshareLimit int            `json:"screenshare_limit"`          // Max session length in min
+	ID                uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
+	Name              string         `json:"name"`
+	Size              string         `json:"size"`
+	BrowserAgent      string         `json:"browser_agent"`
+	LastSeen          time.Time      `json:"last_seen"`
+	Status            string         `json:"status"` // online, offline, idle
+	RegistrationCode  string         `gorm:"index" json:"registration_code"`
+	IPAddress         string         `json:"ip_address"`
+	Approved          bool           `json:"approved"`
+	LastScreenshot    string         `json:"last_screenshot"`
+	Secret            string         `json:"-"` // Hashed secret
+	OrganizationID    uint           `json:"organization_id"`
+	Organization      *Organization  `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
+	Groups            []Group        `gorm:"many2many:group_displays;" json:"groups"`
+	Schedules         []Schedule     `gorm:"many2many:schedule_displays;" json:"schedules"`
+	ScreenshareCode   string         `json:"screenshare_code,omitempty"`              // Current active pairing code
+	ScreenshareLimit  int            `json:"screenshare_limit"`                       // Max session length in min
+	AllowLocalPairing bool           `json:"allow_local_pairing" gorm:"default:true"` // Toggle for player-side pairing code
 }
 
 type Slide struct {

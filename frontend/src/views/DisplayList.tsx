@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Monitor, CheckCircle, XCircle, Clock, Camera, RefreshCw, Trash2, Users, Share2, Calendar } from 'lucide-react';
+import { Monitor, CheckCircle, XCircle, Clock, Camera, RefreshCw, Trash2, Users, Share2, Calendar, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ interface Display {
         schedules?: { id: number; playlist?: { name: string } }[];
     }[];
     schedules?: { id: number; playlist?: { name: string } }[];
+    allow_local_pairing?: boolean;
 }
 
 const DisplayList: React.FC = () => {
@@ -34,7 +35,8 @@ const DisplayList: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const [editingDisplay, setEditingDisplay] = useState<Display | null>(null);
-    const [newName, setNewName] = useState("");
+    const [editName, setEditName] = useState("");
+    const [editAllowPairing, setEditAllowPairing] = useState(true);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -105,13 +107,17 @@ const DisplayList: React.FC = () => {
 
     const startEditing = (display: Display) => {
         setEditingDisplay(display);
-        setNewName(display.name);
+        setEditName(display.name);
+        setEditAllowPairing(display.allow_local_pairing !== false); // Default true if undefined
     };
 
     const saveEdit = async () => {
         if (!editingDisplay) return;
         try {
-            await axios.put(`/api/displays/${editingDisplay.id}`, { name: newName });
+            await axios.put(`/api/displays/${editingDisplay.id}`, {
+                name: editName,
+                allow_local_pairing: editAllowPairing
+            });
             setEditingDisplay(null);
             fetchData();
         } catch (err) {
@@ -227,23 +233,9 @@ const DisplayList: React.FC = () => {
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            {editingDisplay?.id === display.id ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        value={newName}
-                                                        onChange={(e) => setNewName(e.target.value)}
-                                                        className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded px-2 py-1 text-[var(--text-main)] font-bold shadow-inner"
-                                                        autoFocus
-                                                    />
-                                                    <button onClick={saveEdit} className="text-emerald-500 hover:text-emerald-400"><CheckCircle size={18} /></button>
-                                                    <button onClick={() => setEditingDisplay(null)} className="text-red-500 hover:text-red-400"><XCircle size={18} /></button>
-                                                </div>
-                                            ) : (
-                                                <h4 className="font-bold text-[var(--text-main)] text-lg cursor-pointer hover:text-indigo-400" onClick={() => startEditing(display)}>
-                                                    {display.name || t('displays.unnamed')}
-                                                    <span className="text-xs text-slate-500 ml-2 opacity-0 group-hover:opacity-100">({t('common.edit')})</span>
-                                                </h4>
-                                            )}
+                                            <h4 className="font-bold text-[var(--text-main)] text-lg">
+                                                {display.name || t('displays.unnamed')}
+                                            </h4>
                                         </div>
                                         <div className="flex items-center gap-3 text-sm text-slate-400 mt-1">
                                             <span className="flex items-center gap-1">
@@ -307,6 +299,13 @@ const DisplayList: React.FC = () => {
                                                     </div>
                                                 </div>
                                             )}
+                                            <button
+                                                onClick={() => startEditing(display)}
+                                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                                title={t('common.settings')}
+                                            >
+                                                <Settings size={18} />
+                                            </button>
                                             <button
                                                 onClick={() => startDirectShare(display.id)}
                                                 className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-500/20 rounded-lg transition-all"
@@ -382,7 +381,60 @@ const DisplayList: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+            {/* Edit Settings Modal */}
+            {
+                editingDisplay && (
+                    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <h3 className="text-xl font-bold text-[var(--text-main)] mb-6">{t('displays.settings_title')}</h3>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-400 mb-2">{t('displays.display_name')}</label>
+                                    <input
+                                        type="text"
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 font-bold"
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between p-4 bg-[var(--bg-main)] rounded-xl border border-[var(--border-subtle)]">
+                                    <div>
+                                        <div className="font-bold text-[var(--text-main)]">{t('displays.active_pairing')}</div>
+                                        <div className="text-xs text-slate-500">{t('displays.active_pairing_desc')}</div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={editAllowPairing}
+                                            onChange={(e) => setEditAllowPairing(e.target.checked)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-11 h-6 bg-slate-700/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 flex gap-3">
+                                <button
+                                    onClick={() => setEditingDisplay(null)}
+                                    className="flex-1 py-3 text-slate-400 font-bold hover:bg-white/5 rounded-xl transition-all"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    onClick={saveEdit}
+                                    className="flex-1 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg"
+                                >
+                                    {t('common.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

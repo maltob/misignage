@@ -212,6 +212,13 @@ const Player: React.FC = () => {
 
     const fetchScreenshareCode = async () => {
         if (status !== 'active') return;
+
+        // Check if local pairing is allowed
+        if (display && display.allow_local_pairing === false) {
+            setScreenshareCode('');
+            return;
+        }
+
         try {
             const id = localStorage.getItem('display_id');
             const res = await axios.get(`/api/screenshare/code?display_id=${id}`, getHeaders());
@@ -228,7 +235,7 @@ const Player: React.FC = () => {
         fetchScreenshareCode();
         const interval = setInterval(fetchScreenshareCode, 5 * 60 * 1000); // Life insurance: refresh every 5 mins
         return () => clearInterval(interval);
-    }, [status]);
+    }, [status, display]); // Added display dependency to react to config changes
 
     const handleScreenshareSignal = async (payload: any) => {
         const { signal, session_id, guest_name } = payload;
