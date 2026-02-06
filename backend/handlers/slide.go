@@ -99,6 +99,7 @@ func CreateSlide(c echo.Context) error {
 	}
 
 	util.LogAudit(c, "CREATE", "SLIDE", slide.ID, fmt.Sprintf("Created slide: %s (%s)", slide.Name, slide.Type))
+	NotifyDashboard("slide_created", slide)
 	return c.JSON(http.StatusCreated, slide)
 }
 
@@ -261,6 +262,7 @@ func UpdateSlide(c echo.Context) error {
 	}
 
 	util.LogAudit(c, "UPDATE", "SLIDE", slide.ID, fmt.Sprintf("Updated slide: %s", slide.Name))
+	NotifyDashboard("slide_updated", slide)
 	return c.JSON(http.StatusOK, slide)
 }
 
@@ -295,6 +297,7 @@ func DeleteSlide(c echo.Context) error {
 	}
 
 	util.LogAudit(c, "DELETE", "SLIDE", slide.ID, fmt.Sprintf("Deleted slide: %s", slide.Name))
+	NotifyDashboard("slide_deleted", map[string]interface{}{"id": slide.ID})
 	return c.NoContent(http.StatusNoContent)
 }
 
@@ -343,6 +346,7 @@ func UpdateSlideVariables(c echo.Context) error {
 	}
 
 	util.LogAudit(c, "UPDATE_VARS", "SLIDE", slide.ID, fmt.Sprintf("Updated variables for slide: %s", slide.Name))
+	NotifyDashboard("slide_updated", slide)
 
 	return c.JSON(http.StatusOK, slide)
 }

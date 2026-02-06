@@ -20,14 +20,17 @@ import ContributorShare from './views/ContributorShare';
 import PublicPlaylistView from './views/PublicPlaylistView';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { WebSocketProvider } from './context/WebSocketContext';
 
 const App: React.FC = () => {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <HashRouter>
-                    <AppContent />
-                </HashRouter>
+                <WebSocketProvider>
+                    <HashRouter>
+                        <AppContent />
+                    </HashRouter>
+                </WebSocketProvider>
             </AuthProvider>
         </ThemeProvider>
     );

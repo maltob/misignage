@@ -23,15 +23,15 @@ var (
 	// displayID -> connection
 	clients   = make(map[string]*websocket.Conn)
 	clientsMu sync.Mutex
+
+	// userID -> connection (for dashboard updates)
+	dashboardClients   = make(map[string]*websocket.Conn)
+	dashboardClientsMu sync.Mutex
 )
 
 func HandleWS(c echo.Context) error {
 	displayID := c.QueryParam("display_id")
 	tokenStr := c.QueryParam("token")
-
-	if displayID == "" {
-		return c.String(http.StatusBadRequest, "Missing display_id")
-	}
 
 	// Verify Token
 	token, err := jwt.ParseWithClaims(tokenStr, &auth.JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -43,8 +43,21 @@ func HandleWS(c echo.Context) error {
 	}
 
 	claims, ok := token.Claims.(*auth.JwtCustomClaims)
-	if !ok || fmt.Sprintf("%d", claims.DisplayID) != displayID {
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token claims"})
+	}
+
+	// Handle Dashboard Users vs Displays
+	isDashboardUser := claims.UserID != 0
+
+	// If it's a display, enforce displayID match
+	if !isDashboardUser {
+		if displayID == "" {
+			return c.String(http.StatusBadRequest, "Missing display_id")
+		}
+		if fmt.Sprintf("%d", claims.DisplayID) != displayID {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token claims"})
+		}
 	}
 
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -53,15 +66,28 @@ func HandleWS(c echo.Context) error {
 	}
 	defer ws.Close()
 
-	clientsMu.Lock()
-	clients[displayID] = ws
-	clientsMu.Unlock()
+	if isDashboardUser {
+		userID := fmt.Sprintf("%d", claims.UserID)
+		dashboardClientsMu.Lock()
+		dashboardClients[userID] = ws
+		dashboardClientsMu.Unlock()
 
-	defer func() {
+		defer func() {
+			dashboardClientsMu.Lock()
+			delete(dashboardClients, userID)
+			dashboardClientsMu.Unlock()
+		}()
+	} else {
 		clientsMu.Lock()
-		delete(clients, displayID)
+		clients[displayID] = ws
 		clientsMu.Unlock()
-	}()
+
+		defer func() {
+			clientsMu.Lock()
+			delete(clients, displayID)
+			clientsMu.Unlock()
+		}()
+	}
 
 	for {
 		// Read message from display (e.g. heartbeat or status)
@@ -112,6 +138,26 @@ func NotifyDisplay(displayID string, msgType string, payload interface{}) {
 			log.Printf("Failed to notify display %s: %v", displayID, err)
 			conn.Close()
 			delete(clients, displayID)
+		}
+	}
+}
+
+// NotifyDashboard sends a message to all connected dashboard users
+func NotifyDashboard(msgType string, payload interface{}) {
+	dashboardClientsMu.Lock()
+	defer dashboardClientsMu.Unlock()
+
+	msg := map[string]interface{}{
+		"type":    msgType,
+		"payload": payload,
+	}
+
+	for userID, conn := range dashboardClients {
+		err := conn.WriteJSON(msg)
+		if err != nil {
+			log.Printf("Failed to notify dashboard user %s: %v", userID, err)
+			conn.Close()
+			delete(dashboardClients, userID)
 		}
 	}
 }

@@ -143,6 +143,7 @@ func processVideoTask(slide *models.Slide) {
 	}
 
 	db.DB.Model(slide).Updates(updates)
+	NotifyDashboard("slide_updated", slide)
 }
 
 func processImageTask(slide *models.Slide) {
@@ -170,6 +171,7 @@ func processImageTask(slide *models.Slide) {
 		"ocr_content":       ocrText,
 		"processing_status": status,
 	})
+	NotifyDashboard("slide_updated", slide)
 }
 
 func processWebpageTask(slide *models.Slide) {
@@ -276,6 +278,7 @@ func processWebpageTask(slide *models.Slide) {
 		"thumbnail_url":     "/api/uploads/" + thumbName,
 		"processing_status": "completed",
 	})
+	NotifyDashboard("slide_updated", slide)
 }
 
 func getLocalPath(contentStr string) (string, error) {
@@ -304,6 +307,9 @@ func runOCR(imagePath string) (string, error) {
 
 func updateStatus(id uint, status string) {
 	db.DB.Model(&models.Slide{}).Where("id = ?", id).Update("processing_status", status)
+	// We only have ID here, so we send a minimal update or fetch the slide?
+	// Sending just ID and status is enough for the frontend to know something changed
+	NotifyDashboard("slide_updated", map[string]interface{}{"id": id, "processing_status": status})
 }
 
 func getVideoDuration(path string) (float64, error) {

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Plus, Image as ImageIcon, Video, Globe, Table as TableIcon, Search, Trash2, Share2, FileText, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import Tesseract from 'tesseract.js';
 import SlideCreationModal from '../components/SlideCreationModal';
 import { useRef } from 'react';
@@ -25,6 +26,7 @@ interface Slide {
 const SlideManager: React.FC = () => {
     const { t } = useTranslation();
     const { user } = useAuth();
+    const { lastSlideUpdate } = useWebSocket();
     const [slides, setSlides] = useState<Slide[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editSlide, setEditSlide] = useState<Slide | undefined>();
@@ -37,7 +39,7 @@ const SlideManager: React.FC = () => {
             fetchSlides(searchQuery);
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchQuery]);
+    }, [searchQuery, lastSlideUpdate]);
 
     // Background OCR Loop
     useEffect(() => {
