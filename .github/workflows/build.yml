@@ -18,14 +18,17 @@ jobs:
             runner: windows-latest
             arch: amd64
             binary_name: misignage.exe
+            goos_command: "$ENV:"
           - os: linux
             runner: ubuntu-latest
             arch: amd64
             binary_name: misignage-linux
+            goos_command: ""
           - os: darwin
             runner: macos-latest
             arch: arm64
             binary_name: misignage-macos
+            goos_command: ""
 
     steps:
       - name: Checkout Code
@@ -61,7 +64,9 @@ jobs:
       - name: Build Backend
         run: |
           cd backend
-          $ENV:GOOS=${{ matrix.os }}; $ENV:GOARCH=${{ matrix.arch }}; go build -o ../${{ matrix.binary_name }} ./main.go
+          ${{ goos_command }}GOOS=${{ matrix.os }}
+          ${{ goos_command }}GOARCH=${{ matrix.arch }}
+          go build -o ../${{ matrix.binary_name }} ./main.go
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
