@@ -488,9 +488,9 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
             </div>
 
             {isCodeEditorOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-xl">
-                    <div className="modal-card w-full max-w-[95vw] h-full max-h-full flex flex-col overflow-hidden animate-in zoom-in duration-200 border border-[var(--border-subtle)]" style={{ backgroundColor: 'var(--bg-modal)' }}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--sidebar-hover)] text-[var(--text-main)]">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 bg-black/95 backdrop-blur-xl">
+                    <div className="modal-card w-full max-w-[99vw] h-full max-h-full flex flex-col overflow-hidden animate-in zoom-in duration-200 border border-[var(--border-subtle)]" style={{ backgroundColor: 'var(--bg-modal)' }}>
+                        <div className="p-4 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--sidebar-hover)] text-[var(--text-main)]">
                             <div className="flex items-center gap-3">
                                 <Code size={20} className="text-indigo-400" />
                                 <h4 className="text-xl font-bold">{t('modals.slide_creation.advanced_title')}</h4>
@@ -522,7 +522,7 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                                     <textarea
                                         value={(htmlData as any)[activeTab]}
                                         onChange={(e) => setHtmlData({ ...htmlData, [activeTab]: e.target.value })}
-                                        className="w-full h-full bg-transparent p-6 outline-none font-mono text-sm resize-none text-[var(--text-main)] leading-relaxed scrollbar-none"
+                                        className="w-full h-full bg-transparent p-6 outline-none font-mono text-base resize-none text-[var(--text-main)] leading-relaxed scrollbar-none"
                                         spellCheck={false}
                                         placeholder={t('templates.modal.editor_placeholder', { type: activeTab.toUpperCase() })}
                                     />
