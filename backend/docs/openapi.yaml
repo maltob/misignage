@@ -1,102 +1,210 @@
 openapi: 3.0.0
 info:
   title: miSignage API
+  description: API for managing digital signage networks, slides, playlists, and schedules.
   version: 1.0.0
-  description: API for managing digital signage displays, slides, and playlists.
 servers:
-  - url: /api
+  - url: /
+    description: Main Server
 components:
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    apiKey:
+    ApiKeyAuth:
       type: apiKey
       in: header
       name: X-API-KEY
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, viewer]
+        organization_id:
+          type: integer
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    Slide:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [image, video, webpage, html, table]
+        content:
+          type: string
+          description: JSON string containing content details (url, html/css/js, etc)
+        processing_status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        thumbnail_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    Display:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [online, offline, idle]
+        last_seen:
+          type: string
+          format: date-time
+        ip_address:
+          type: string
 security:
-  - bearerAuth: []
-  - apiKey: []
+  - BearerAuth: []
+  - ApiKeyAuth: []
 paths:
-  /auth/login:
+  /login:
     post:
       summary: User Login
       security: []
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                email: { type: string }
-                password: { type: string }
-      responses:
-        '200':
-          description: OK
-  /slides/{id}/variables:
-    post:
-      summary: Update Slide Variables (External Script)
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
-      requestBody:
-        required: true
-        content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Variables updated
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Unauthorized
-        '403':
-          description: Forbidden
-  /apikeys:
+  /api/slides:
     get:
-      summary: List API Keys
+      summary: Get all slides
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search query for slide name or OCR content
       responses:
         '200':
-          description: List of keys
+          description: List of slides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slide'
     post:
-      summary: Create API Key
+      summary: Create a new slide
       requestBody:
         content:
-          application/x-www-form-urlencoded:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                name: { type: string }
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [image, video, webpage, html]
+                file:
+                  type: string
+                  format: binary
+                content:
+                  type: string
+                scale_mode:
+                  type: string
+                render_webpage:
+                  type: boolean
+                render_interval:
+                  type: integer
+                render_delay:
+                  type: integer
       responses:
         '201':
-          description: Key created
-  /apikeys/{id}:
-    delete:
-      summary: Delete/Revoke API Key
+          description: Slide created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slide'
+  /api/slides/{id}:
+    put:
+      summary: Update a slide
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Slide updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slide'
+    delete:
+      summary: Delete a slide
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
         '204':
-          description: No Content
-  /slides:
+          description: Slide deleted
+  /api/displays:
     get:
-      summary: List Slides
-    post:
-      summary: Create Slide
-  /displays:
-    get:
-      summary: List Displays
-  /playlists:
-    get:
-      summary: List Playlists
-  /schedules:
-    get:
-      summary: List Schedules
+      summary: Get all displays
+      responses:
+        '200':
+          description: List of displays
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Display'
