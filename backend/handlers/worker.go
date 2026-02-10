@@ -175,15 +175,25 @@ func processImageTask(slide *models.Slide) {
 }
 
 func processWebpageTask(slide *models.Slide) {
-	var content map[string]string
+	var content map[string]interface{}
 	if err := json.Unmarshal([]byte(slide.Content), &content); err != nil {
 		util.LogErrorf(slide.OrganizationID, "worker", slide.ID, "Worker error for slide %d: invalid content", slide.ID)
 		updateStatus(slide.ID, "failed")
 		return
 	}
-	url := content["url"]
+
+	url, _ := content["url"].(string)
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
+	}
+
+	// Determine viewport size
+	width, height := 1920, 1080
+	if w, ok := content["width"].(float64); ok {
+		width = int(w)
+	}
+	if h, ok := content["height"].(float64); ok {
+		height = int(h)
 	}
 
 	thumbName := fmt.Sprintf("web_%d_%d.png", slide.ID, time.Now().Unix())
@@ -206,7 +216,7 @@ func processWebpageTask(slide *models.Slide) {
 
 	// Setup chromedp
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1920, 1080),
+		chromedp.WindowSize(width, height),
 		chromedp.NoSandbox,
 	)
 
@@ -282,11 +292,11 @@ func processWebpageTask(slide *models.Slide) {
 }
 
 func getLocalPath(contentStr string) (string, error) {
-	var content map[string]string
+	var content map[string]interface{}
 	if err := json.Unmarshal([]byte(contentStr), &content); err != nil {
 		return "", err
 	}
-	url := content["url"]
+	url, _ := content["url"].(string)
 	if len(url) > 12 && url[:12] == "/api/uploads" {
 		return filepath.Join("uploads", filepath.Base(url)), nil
 	}

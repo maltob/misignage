@@ -45,7 +45,19 @@ func CreateSlide(c echo.Context) error {
 		content = string(jsonContent)
 	} else if slideType == "webpage" {
 		url := c.FormValue("content")
-		contentMap := map[string]string{"url": url}
+		contentMap := map[string]interface{}{"url": url}
+
+		if w := c.FormValue("viewport_width"); w != "" {
+			if val, err := strconv.Atoi(w); err == nil {
+				contentMap["width"] = val
+			}
+		}
+		if h := c.FormValue("viewport_height"); h != "" {
+			if val, err := strconv.Atoi(h); err == nil {
+				contentMap["height"] = val
+			}
+		}
+
 		jsonContent, _ := json.Marshal(contentMap)
 		content = string(jsonContent)
 	} else if slideType == "html" {
@@ -191,10 +203,40 @@ func UpdateSlide(c echo.Context) error {
 		}
 	} else if slide.Type == "webpage" || slide.Type == "table" {
 		rawContent := c.FormValue("content")
-		if rawContent != "" {
+		vw := c.FormValue("viewport_width")
+		vh := c.FormValue("viewport_height")
+
+		// If explicit content is provided OR viewport settings changed for webpage
+		if rawContent != "" || (slide.Type == "webpage" && (vw != "" || vh != "")) {
 			var newContent string
+
 			if slide.Type == "webpage" {
-				contentMap := map[string]string{"url": rawContent}
+				// Reconstruct content map
+				contentMap := map[string]interface{}{}
+
+				// Initialize with existing
+				var oldMap map[string]interface{}
+				if err := json.Unmarshal([]byte(slide.Content), &oldMap); err == nil {
+					contentMap = oldMap
+				}
+
+				// Update URL if provided
+				if rawContent != "" {
+					contentMap["url"] = rawContent
+				}
+
+				// Update dimensions if provided
+				if vw != "" {
+					if val, err := strconv.Atoi(vw); err == nil {
+						contentMap["width"] = val
+					}
+				}
+				if vh != "" {
+					if val, err := strconv.Atoi(vh); err == nil {
+						contentMap["height"] = val
+					}
+				}
+
 				jsonContent, _ := json.Marshal(contentMap)
 				newContent = string(jsonContent)
 			} else {
@@ -206,6 +248,7 @@ func UpdateSlide(c echo.Context) error {
 					newContent = rawContent
 				}
 			}
+
 			if newContent != oldContent {
 				slide.Content = newContent
 				contentChanged = true
