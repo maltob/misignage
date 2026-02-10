@@ -188,12 +188,12 @@ func processWebpageTask(slide *models.Slide) {
 	}
 
 	// Determine viewport size
-	width, height := 1920, 1080
+	width, height := int64(1920), int64(1080)
 	if w, ok := content["width"].(float64); ok {
-		width = int(w)
+		width = int64(w)
 	}
 	if h, ok := content["height"].(float64); ok {
-		height = int(h)
+		height = int64(h)
 	}
 
 	thumbName := fmt.Sprintf("web_%d_%d.png", slide.ID, time.Now().Unix())
@@ -216,10 +216,10 @@ func processWebpageTask(slide *models.Slide) {
 
 	// Setup chromedp
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(width, height),
+
 		chromedp.NoSandbox,
 	)
-
+	chromedp.EmulateViewport(width, height)
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
