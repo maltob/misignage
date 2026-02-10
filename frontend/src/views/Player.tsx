@@ -5,6 +5,66 @@ import html2canvas from 'html2canvas';
 import { useTranslation } from 'react-i18next';
 import ScreenshareOverlay from '../components/ScreenshareOverlay';
 
+const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?: string }> = ({ src, durationSec, scaleMode }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const imgRef = useRef<HTMLImageElement>(null);
+    const [scrollNeeded, setScrollNeeded] = useState(false);
+    const [overflowPx, setOverflowPx] = useState(0);
+
+    const handleLoad = () => {
+        const img = imgRef.current;
+        const container = containerRef.current;
+        if (!img || !container) return;
+
+        const containerW = container.clientWidth;
+        const containerH = container.clientHeight;
+        const scaledH = (img.naturalHeight / img.naturalWidth) * containerW;
+
+        if (scaledH > containerH * 1.1) {
+            setScrollNeeded(true);
+            setOverflowPx(scaledH - containerH);
+        } else {
+            setScrollNeeded(false);
+        }
+    };
+
+    if (!scrollNeeded) {
+        return (
+            <div ref={containerRef} className="w-full h-full">
+                <img
+                    ref={imgRef}
+                    src={src}
+                    onLoad={handleLoad}
+                    className={`w-full h-full animate-in fade-in duration-1000 ${scaleMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+                    alt=""
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div ref={containerRef} className="w-full h-full overflow-hidden">
+            <img
+                ref={imgRef}
+                src={src}
+                onLoad={handleLoad}
+                alt=""
+                className="w-full animate-in fade-in duration-1000"
+                style={{
+                    display: 'block',
+                    animation: `scrollWebSnap ${durationSec}s linear forwards`,
+                }}
+            />
+            <style>{`
+                @keyframes scrollWebSnap {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-${overflowPx}px); }
+                }
+            `}</style>
+        </div>
+    );
+};
+
 const Player: React.FC = () => {
     const { t } = useTranslation();
     const [display, setDisplay] = useState<any>(null);
@@ -14,6 +74,7 @@ const Player: React.FC = () => {
     const [online, setOnline] = useState(true);
     const [playlist, setPlaylist] = useState<any>(null);
     const [slideIndex, setSlideIndex] = useState(0);
+    const [slideDuration, setSlideDuration] = useState(10);
 
     const [schedules, setSchedules] = useState<any[]>([]);
     const [syncing, setSyncing] = useState(false);
@@ -197,7 +258,9 @@ const Player: React.FC = () => {
             }
         }
 
-        const duration = (currentSlideData.duration || 10) * 1000;
+        const durationSec = currentSlideData.duration || 10;
+        setSlideDuration(durationSec);
+        const duration = durationSec * 1000;
         const timer = setTimeout(() => {
             setSlideIndex((prev) => (prev + 1) % playlist.slides.length);
         }, duration);
@@ -596,7 +659,7 @@ const Player: React.FC = () => {
                 );
             case 'webpage':
                 if (currentSlide.render_webpage && currentSlide.thumbnail_url) {
-                    return <img src={currentSlide.thumbnail_url} className={`w-full h-full animate-in fade-in duration-1000 ${currentSlide.scale_mode === 'contain' ? 'object-contain' : 'object-cover'}`} alt="" />;
+                    return <ScrollingWebImage src={currentSlide.thumbnail_url} durationSec={slideDuration} scaleMode={currentSlide.scale_mode} />;
                 }
                 return <iframe src={resolvedUrl} className="w-full h-full border-none animate-in fade-in duration-1000" title="web-slide" />;
             case 'table':
