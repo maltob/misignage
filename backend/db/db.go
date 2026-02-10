@@ -127,7 +127,9 @@ func seedTemplates() {
 	templates := []models.SlideTemplate{
 		{
 			Name: "Minimalist Digital Clock",
-			HTML: `<div class="clock-container">
+			HTML: `<div class="slide-background"></div>
+<div class="slide-overlay"></div>
+<div class="clock-container">
   <div id="time">00:00:00</div>
   <div id="date">JANUARY 1, 2026</div>
 </div>`,
@@ -137,7 +139,28 @@ func seedTemplates() {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: {{background}};
+  /* background: {{background}}; removed in favor of overlay/image */
+}
+.slide-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('{{backgroundImage}}');
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
+  background-color: {{background}}; /* Fallback if no image */
+}
+.slide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, {{overlayOpacity}});
+  z-index: -1;
 }
 #time {
   font-size: {{fontSize}};
@@ -162,13 +185,17 @@ update();`,
 			Variables: `[
   {"name": "background", "label": "Background Color", "type": "color", "default": "#000000"},
   {"name": "fontSize", "label": "Font Size", "type": "text", "default": "12rem"},
-  {"name": "color", "label": "Text Color", "type": "color", "default": "#ffffff"}
+  {"name": "color", "label": "Text Color", "type": "color", "default": "#ffffff"},
+  {"name": "backgroundImage", "label": "Background Image URL", "type": "text", "default": ""},
+  {"name": "overlayOpacity", "label": "Overlay Opacity (0-1)", "type": "text", "default": "0.5"}
 ]`,
 			OrganizationID: 0, // Global/System Template
 		},
 		{
 			Name: "Animated News Ticker",
-			HTML: `<div class="ticker-wrap">
+			HTML: `<div class="slide-background"></div>
+<div class="slide-overlay"></div>
+<div class="ticker-wrap">
   <div class="ticker-label">{{label}}</div>
   <div class="ticker">
     <div class="ticker__item">{{message}}</div>
@@ -213,21 +240,41 @@ update();`,
   font-size: 1.5rem;
   color: white;
 }
-@keyframes ticker {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-100%, 0, 0); }
+.slide-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('{{backgroundImage}}');
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
+}
+.slide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, {{overlayOpacity}});
+  z-index: -1;
 }`,
 			JS: ``,
 			Variables: `[
   {"name": "label", "label": "Ticker Category", "type": "text", "default": "BREAKING NEWS"},
   {"name": "message", "label": "Ticker Message", "type": "text", "default": "MiSignage Custom HTML Slides are now live! Create rich content easily."},
-  {"name": "accent", "label": "Accent Color", "type": "color", "default": "#6366f1"}
+  {"name": "accent", "label": "Accent Color", "type": "color", "default": "#6366f1"},
+  {"name": "backgroundImage", "label": "Background Image URL", "type": "text", "default": ""},
+  {"name": "overlayOpacity", "label": "Overlay Opacity (0-1)", "type": "text", "default": "0.5"}
 ]`,
 			OrganizationID: 0,
 		},
 		{
 			Name: "Weather Forecast",
-			HTML: `<div class="weather-container">
+			HTML: `<div class="slide-background"></div>
+<div class="slide-overlay"></div>
+<div class="weather-container">
   <div class="weather-city">{{city}}</div>
   <div class="weather-temp">{{temp}}°C</div>
   <div class="weather-desc">{{condition}}</div>
@@ -238,9 +285,30 @@ update();`,
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: linear-gradient(135deg, {{color1}}, {{color2}});
+  /* background: linear-gradient(135deg, {{color1}}, {{color2}}); fallback in background class */
   color: white;
   text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.slide-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('{{backgroundImage}}');
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
+  background: linear-gradient(135deg, {{color1}}, {{color2}}); /* Fallback */
+}
+.slide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, {{overlayOpacity}});
+  z-index: -1;
 }
 .weather-city {
   font-size: 3rem;
@@ -265,7 +333,9 @@ update();`,
   {"name": "temp", "label": "Temperature", "type": "text", "default": "22"},
   {"name": "condition", "label": "Condition", "type": "text", "default": "PARTLY CLOUDY"},
   {"name": "color1", "label": "Gradient Color 1", "type": "color", "default": "#0ea5e9"},
-  {"name": "color2", "label": "Gradient Color 2", "type": "color", "default": "#6366f1"}
+  {"name": "color2", "label": "Gradient Color 2", "type": "color", "default": "#6366f1"},
+  {"name": "backgroundImage", "label": "Background Image URL", "type": "text", "default": ""},
+  {"name": "overlayOpacity", "label": "Overlay Opacity (0-1)", "type": "text", "default": "0.5"}
 ]`,
 			OrganizationID: 0,
 		},
