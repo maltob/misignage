@@ -146,6 +146,7 @@
             "video": "Video",
             "webpage": "Webpage",
             "table": "Table",
+            "html": "HTML",
             "screenshare": "Screenshare"
         },
         "url_label": "Website URL",
@@ -154,7 +155,8 @@
             "proxy_desc": "Render the webpage on the server (headless browser) and serve as an image. Useful for internal sites or complex dashboards.",
             "interval": "Refresh Interval",
             "delay": "Render Delay",
-            "script": "Injection Script"
+            "script": "Injection Script",
+            "viewport_size": "Viewport Size"
         }
     },
     "users": {

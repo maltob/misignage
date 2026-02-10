@@ -144,17 +144,19 @@
         "types": {
             "image": "Imagen",
             "video": "Vídeo",
-            "webpage": "Página web",
+            "webpage": "Página Web",
             "table": "Tabla",
-            "screenshare": "Compartir pantalla"
+            "html": "HTML",
+            "screenshare": "Compartir Pantalla"
         },
-        "url_label": "URL del sitio web",
+        "url_label": "URL del Sitio Web",
         "render_options": {
             "use_proxy": "Usar Proxy / Servicio de Renderizado",
-            "proxy_desc": "Renderizar la página web en el servidor (navegador headless) y servir como imagen. Útil para sitios internos o dashboards complejos.",
-            "interval": "Intervalo de actualización",
-            "delay": "Retraso de renderizado",
-            "script": "Script de inyección"
+            "proxy_desc": "La página web se renderiza en el servidor (navegador headless) y se sirve como imagen. Útil para sitios internos o paneles complejos.",
+            "interval": "Intervalo de Actualización",
+            "delay": "Retraso de Renderizado",
+            "script": "Script de Inyección",
+            "viewport_size": "Tamaño de Vista"
         }
     },
     "users": {

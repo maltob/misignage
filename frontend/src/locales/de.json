@@ -146,15 +146,17 @@
             "video": "Video",
             "webpage": "Webseite",
             "table": "Tabelle",
+            "html": "HTML",
             "screenshare": "Bildschirmfreigabe"
         },
         "url_label": "Webseiten-URL",
         "render_options": {
-            "use_proxy": "Proxy / Render-Dienst verwenden",
-            "proxy_desc": "Webseite auf dem Server rendern (Headless-Browser) und als Bild bereitstellen. Nützlich für interne Seiten oder komplexe Dashboards.",
+            "use_proxy": "Proxy / Render-Service nutzen",
+            "proxy_desc": "Die Webseite wird auf dem Server gerendert (Headless Browser) und als Bild bereitgestellt. Nützlich für interne Seiten oder komplexe Dashboards.",
             "interval": "Aktualisierungsintervall",
             "delay": "Render-Verzögerung",
-            "script": "Injektionsskript"
+            "script": "Injektions-Skript",
+            "viewport_size": "Ansichtsgröße"
         }
     },
     "users": {
