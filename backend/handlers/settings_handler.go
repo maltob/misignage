@@ -1,14 +1,17 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/maltob/misignage/auth"
 	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/ice"
 	"github.com/maltob/misignage/models"
 	"github.com/maltob/misignage/util"
 	"golang.org/x/crypto/bcrypt"
@@ -20,6 +23,17 @@ func GetOrgSettings(c echo.Context) error {
 	if err := db.DB.First(&org, user.OrganizationID).Error; err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Organization not found"})
 	}
+
+	// Mask ICE config before returning to UI
+	if org.IceProvider == "cloudflare" && org.IceConfig != "" {
+		decrypted, _ := util.Decrypt(org.IceConfig)
+		var config ice.CloudflareConfig
+		json.Unmarshal([]byte(decrypted), &config)
+		config.KeyToken = util.MaskCredential(config.KeyToken)
+		maskedJSON, _ := json.Marshal(config)
+		org.IceConfig = string(maskedJSON)
+	}
+
 	return c.JSON(http.StatusOK, org)
 }
 
@@ -80,6 +94,34 @@ func UpdateOrgSettings(c echo.Context) error {
 	retentionPolicy := c.FormValue("retention_policy")
 	if retentionPolicy != "" {
 		org.RetentionPolicy = retentionPolicy
+	}
+
+	iceProvider := c.FormValue("ice_provider")
+	if iceProvider != "" {
+		org.IceProvider = iceProvider
+	}
+
+	iceConfigRaw := c.FormValue("ice_config")
+	if iceConfigRaw != "" {
+		// If it's masked (contains ....), don't update the secret part
+		if iceProvider == "cloudflare" {
+			var newConfig ice.CloudflareConfig
+			json.Unmarshal([]byte(iceConfigRaw), &newConfig)
+
+			if strings.Contains(newConfig.KeyToken, "....") {
+				// Get existing config to preserve token
+				oldDecrypted, _ := util.Decrypt(org.IceConfig)
+				var oldConfig ice.CloudflareConfig
+				json.Unmarshal([]byte(oldDecrypted), &oldConfig)
+				newConfig.KeyToken = oldConfig.KeyToken
+			}
+
+			newConfigJSON, _ := json.Marshal(newConfig)
+			encrypted, _ := util.Encrypt(string(newConfigJSON))
+			org.IceConfig = encrypted
+		} else {
+			org.IceConfig = ""
+		}
 	}
 
 	db.DB.Save(&org)

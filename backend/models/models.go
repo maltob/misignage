@@ -17,6 +17,8 @@ type Organization struct {
 	AllowOIDCAutoProvision bool           `json:"allow_oidc_auto_provision"`
 	OIDCDomain             string         `json:"oidc_domain"`      // e.g. "company.com"
 	RetentionPolicy        string         `json:"retention_policy"` // JSON: {user_uploads: 30, system_uploads: 1, logs: {audit: 90, worker: 7}}
+	IceProvider            string         `json:"ice_provider"`     // "default", "cloudflare"
+	IceConfig              string         `json:"ice_config"`       // JSON, encrypted
 	Users                  []User         `json:"users"`
 }
 

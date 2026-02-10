@@ -1,13 +1,13 @@
 ﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Settings, User, Building, Save, Mail, Key, Shield, Trash2, Clock } from 'lucide-react';
+import { Settings, User, Building, Save, Mail, Key, Shield, Trash2, Clock, Share2, Globe, Lock as LockIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const SettingsManager: React.FC = () => {
     const { t } = useTranslation();
     const { user: currentUser } = useAuth();
-    const [activeSection, setActiveSection] = useState<'profile' | 'organization' | 'retention'>('profile');
+    const [activeSection, setActiveSection] = useState<'profile' | 'organization' | 'retention' | 'screenshare'>('profile');
     const [loading, setLoading] = useState(false);
 
     // Profile State
@@ -20,6 +20,13 @@ const SettingsManager: React.FC = () => {
     const [screenshotInterval, setScreenshotInterval] = useState(0);
     const [allowOIDCAutoProvision, setAllowOIDCAutoProvision] = useState(false);
     const [oidcDomain, setOIDCDomain] = useState('');
+
+    // Screenshare State
+    const [iceProvider, setIceProvider] = useState('default');
+    const [iceConfig, setIceConfig] = useState({
+        key_id: '',
+        key_token: ''
+    });
 
     // Retention State
     const [retentionPolicy, setRetentionPolicy] = useState({
@@ -34,7 +41,7 @@ const SettingsManager: React.FC = () => {
     });
 
     useEffect(() => {
-        if (activeSection === 'organization' || activeSection === 'retention') {
+        if (activeSection === 'organization' || activeSection === 'retention' || activeSection === 'screenshare') {
             fetchOrgSettings();
         }
     }, [activeSection]);
@@ -48,6 +55,14 @@ const SettingsManager: React.FC = () => {
             setScreenshotInterval(res.data.screenshot_interval || 0);
             setAllowOIDCAutoProvision(res.data.allow_oidc_auto_provision);
             setOIDCDomain(res.data.oidc_domain || '');
+            setIceProvider(res.data.ice_provider || 'default');
+            if (res.data.ice_config) {
+                try {
+                    setIceConfig(JSON.parse(res.data.ice_config));
+                } catch (e) {
+                    console.error("Failed to parse ice config", e);
+                }
+            }
             if (res.data.retention_policy) {
                 try {
                     setRetentionPolicy(JSON.parse(res.data.retention_policy));
@@ -90,6 +105,8 @@ const SettingsManager: React.FC = () => {
         formData.append('allow_oidc_auto_provision', String(allowOIDCAutoProvision));
         formData.append('oidc_domain', oidcDomain);
         formData.append('retention_policy', JSON.stringify(retentionPolicy));
+        formData.append('ice_provider', iceProvider);
+        formData.append('ice_config', JSON.stringify(iceConfig));
 
         try {
             await axios.put('/api/settings/org', formData);
@@ -141,6 +158,14 @@ const SettingsManager: React.FC = () => {
                     >
                         <Trash2 size={18} />
                         {t('settings.tabs.retention')}
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('screenshare')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all
+                            ${activeSection === 'screenshare' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-main)]'}`}
+                    >
+                        <Share2 size={18} />
+                        {t('settings.tabs.screenshare')}
                     </button>
                 </div>
 
@@ -464,6 +489,85 @@ const SettingsManager: React.FC = () => {
                                 >
                                     <Save size={18} />
                                     {t('settings.retention.save_policy')}
+                                </button>
+                            )}
+                        </form>
+                    )}
+
+                    {activeSection === 'screenshare' && (
+                        <form onSubmit={handleOrgUpdate} className="space-y-6 animate-in fade-in duration-300">
+                            <h4 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2 mb-4">
+                                <Share2 className="text-indigo-400" />
+                                {t('settings.screenshare.title')}
+                            </h4>
+
+                            <div className="space-y-4">
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('settings.screenshare.provider_label')}</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIceProvider('default')}
+                                        className={`p-4 rounded-xl border flex flex-col items-center gap-3 transition-all ${iceProvider === 'default' ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-slate-400 hover:border-slate-600'}`}
+                                    >
+                                        <Globe size={24} />
+                                        <div className="text-center">
+                                            <p className="font-bold text-sm">Default</p>
+                                            <p className="text-[10px] opacity-60">Public STUN servers</p>
+                                        </div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIceProvider('cloudflare')}
+                                        className={`p-4 rounded-xl border flex flex-col items-center gap-3 transition-all ${iceProvider === 'cloudflare' ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-slate-400 hover:border-slate-600'}`}
+                                    >
+                                        <Shield size={24} />
+                                        <div className="text-center">
+                                            <p className="font-bold text-sm">Cloudflare TURN</p>
+                                            <p className="text-[10px] opacity-60">High reliability Relay</p>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {iceProvider === 'cloudflare' && (
+                                    <div className="space-y-4 p-6 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('settings.screenshare.cloudflare_key_id')}</label>
+                                            <input
+                                                type="text"
+                                                value={iceConfig.key_id}
+                                                onChange={(e) => setIceConfig({ ...iceConfig, key_id: e.target.value })}
+                                                placeholder="e.g. 1a2b3c..."
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 px-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('settings.screenshare.cloudflare_key_token')}</label>
+                                            <div className="relative">
+                                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                                                <input
+                                                    type="password"
+                                                    value={iceConfig.key_token}
+                                                    onChange={(e) => setIceConfig({ ...iceConfig, key_token: e.target.value })}
+                                                    placeholder="Enter Cloudflare Key Token"
+                                                    className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl py-2 pl-9 pr-4 text-[var(--text-main)] focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 italic">
+                                            Generate these in your Cloudflare Dashboard under Real-time &gt; TURN.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {currentUser?.role === 'admin' && (
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="btn-primary flex items-center gap-2 px-6"
+                                >
+                                    <Save size={18} />
+                                    {t('common.save')}
                                 </button>
                             )}
                         </form>

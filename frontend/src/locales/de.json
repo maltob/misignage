@@ -229,7 +229,14 @@
         "tabs": {
             "profile": "Persönliches Profil",
             "organization": "Organisation",
-            "retention": "Aufbewahrungsrichtlinie"
+            "retention": "Aufbewahrungsrichtlinie",
+            "screenshare": "Bildschirmfreigabe"
+        },
+        "screenshare": {
+            "title": "Bildschirmfreigabe & Konnektivität",
+            "provider_label": "ICE-Server-Anbieter",
+            "cloudflare_key_id": "Cloudflare Key ID",
+            "cloudflare_key_token": "Cloudflare Key Token"
         },
         "alerts": {
             "profile_success": "Profil erfolgreich aktualisiert!",

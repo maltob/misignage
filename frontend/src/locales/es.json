@@ -229,7 +229,14 @@
         "tabs": {
             "profile": "Perfil personal",
             "organization": "Organización",
-            "retention": "Política de retención"
+            "retention": "Política de retención",
+            "screenshare": "Compartir pantalla"
+        },
+        "screenshare": {
+            "title": "Compartir pantalla y conectividad",
+            "provider_label": "Proveedor de servidor ICE",
+            "cloudflare_key_id": "Cloudflare Key ID",
+            "cloudflare_key_token": "Cloudflare Key Token"
         },
         "alerts": {
             "profile_success": "¡Perfil actualizado con éxito!",

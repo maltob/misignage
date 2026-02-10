@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/maltob/misignage/auth"
 	"github.com/maltob/misignage/db"
+	"github.com/maltob/misignage/ice"
 	"github.com/maltob/misignage/models"
 	"github.com/maltob/misignage/util"
 )
@@ -104,16 +105,17 @@ func DirectJoinScreenshare(c echo.Context) error {
 
 	util.LogAudit(c, "SCREENSHARE_DIRECT_START", "DISPLAY", display.ID, fmt.Sprintf("Direct screenshare started by %s (Session: %d)", user.Email, session.ID))
 
+	// Fetch ICE servers
+	var org models.Organization
+	db.DB.First(&org, display.OrganizationID)
+	iceProvider := ice.GetProvider(org.IceProvider, org.IceConfig)
+	iceServers, _ := iceProvider.GetIceServers()
+
 	// Return session info and ICE configuration
 	return c.JSON(http.StatusOK, echo.Map{
-		"session_id": session.ID,
-		"display_id": display.ID,
-		"ice_servers": []echo.Map{
-			{"urls": []string{"stun:stun.l.google.com:19302"}},
-			{"urls": []string{"stun:stun1.l.google.com:19302"}},
-			{"urls": []string{"stun:stun2.l.google.com:19302"}},
-			{"urls": []string{"stun:stun.services.mozilla.com"}},
-		},
+		"session_id":  session.ID,
+		"display_id":  display.ID,
+		"ice_servers": iceServers,
 	})
 }
 
@@ -156,16 +158,17 @@ func JoinScreenshare(c echo.Context) error {
 
 	util.LogAudit(c, "SCREENSHARE_START", "DISPLAY", display.ID, fmt.Sprintf("Screenshare started by %s (Session: %d)", guestName, session.ID))
 
+	// Fetch ICE servers
+	var org models.Organization
+	db.DB.First(&org, display.OrganizationID)
+	iceProvider := ice.GetProvider(org.IceProvider, org.IceConfig)
+	iceServers, _ := iceProvider.GetIceServers()
+
 	// Return session info and ICE configuration
 	return c.JSON(http.StatusOK, echo.Map{
-		"session_id": session.ID,
-		"display_id": display.ID,
-		"ice_servers": []echo.Map{
-			{"urls": []string{"stun:stun.l.google.com:19302"}},
-			{"urls": []string{"stun:stun1.l.google.com:19302"}},
-			{"urls": []string{"stun:stun2.l.google.com:19302"}},
-			{"urls": []string{"stun:stun.services.mozilla.com"}},
-		},
+		"session_id":  session.ID,
+		"display_id":  display.ID,
+		"ice_servers": iceServers,
 	})
 }
 
@@ -245,12 +248,29 @@ func PostSignalToSharer(sessionID uint, signal string) {
 
 // GetIceServers returns the STUN/TURN configuration
 func GetIceServers(c echo.Context) error {
-	// In a real app, these would come from env vars
-	// TURN_URL, TURN_USER, TURN_PASS
-	return c.JSON(http.StatusOK, []echo.Map{
-		{"urls": []string{"stun:stun.l.google.com:19302"}},
-		{"urls": []string{"stun:stun1.l.google.com:19302"}},
-		{"urls": []string{"stun:stun2.l.google.com:19302"}},
-		{"urls": []string{"stun:stun.services.mozilla.com"}},
-	})
+	user, ok := c.Get("user").(*auth.JwtCustomClaims)
+	var orgID uint
+
+	if ok {
+		orgID = user.OrganizationID
+	} else {
+		// Public caller (e.g. guest share before session starts)
+		// We might need to handle this differently if we want to restrict TURN usage
+		// but for now, let's allow it or return default STUN if no user context
+		return c.JSON(http.StatusOK, []ice.IceServer{
+			{Urls: []string{"stun:stun.l.google.com:19302"}},
+			{Urls: []string{"stun:stun.services.mozilla.com"}},
+		})
+	}
+
+	var org models.Organization
+	db.DB.First(&org, orgID)
+	iceProvider := ice.GetProvider(org.IceProvider, org.IceConfig)
+	iceServers, err := iceProvider.GetIceServers()
+	if err != nil {
+		log.Printf("[ICE] Error fetching servers: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to fetch ICE servers"})
+	}
+
+	return c.JSON(http.StatusOK, iceServers)
 }
