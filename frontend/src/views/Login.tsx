@@ -73,7 +73,7 @@ const Login: React.FC = () => {
     };
 
     const handleOIDC = (provider: string) => {
-        window.location.href = `http://localhost:8080/auth/${provider}`;
+        window.location.href = `${window.location.origin}/auth/${provider}`;
     };
 
     return (
