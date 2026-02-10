@@ -33,11 +33,19 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apk add --no-cache ca-certificates tzdata ffmpeg chromium nss freetype harfbuzz ttf-freefont
 
+# Create a non-root user and group with static UID/GID
+RUN addgroup -g 1000 -S misignage && \
+    adduser -u 1000 -S misignage -G misignage
+
 # Copy binary from builder
 COPY --from=backend-builder /app/backend/misignage ./
 
-# Create uploads directory
-RUN mkdir uploads
+# Create necessary directories and set ownership
+RUN mkdir -p uploads data && \
+    chown -R misignage:misignage /app
+
+# Switch to non-root user
+USER misignage
 
 # Environment variables
 ENV PORT=8080
