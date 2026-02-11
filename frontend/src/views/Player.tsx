@@ -5,7 +5,14 @@ import html2canvas from 'html2canvas';
 import { useTranslation } from 'react-i18next';
 import ScreenshareOverlay from '../components/ScreenshareOverlay';
 
-const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?: string }> = ({ src, durationSec, scaleMode }) => {
+const ScrollingWebImage: React.FC<{
+    src: string;
+    durationSec: number;
+    scaleMode?: string;
+    vWidth?: number;
+    vHeight?: number;
+    cropOffsetY?: string;
+}> = ({ src, durationSec, scaleMode, vWidth, vHeight, cropOffsetY }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
     const [scrollNeeded, setScrollNeeded] = useState(false);
@@ -25,10 +32,27 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
 
         if (scaledH > containerH * 1.05) {
             setScrollNeeded(true);
-            const totalOverflow = scaledH - containerH;
+
+            // Handle crop offset
+            let offsetPx = 0;
+            if (cropOffsetY) {
+                if (cropOffsetY.endsWith('%')) {
+                    offsetPx = (parseFloat(cropOffsetY) / 100) * scaledH;
+                } else {
+                    offsetPx = parseFloat(cropOffsetY);
+                }
+            }
+
+            const effectiveScaledH = scaledH - offsetPx;
+            const totalOverflow = effectiveScaledH - containerH;
+
+            if (totalOverflow <= 0) {
+                setScrollNeeded(false);
+                return;
+            }
 
             // Calculate steps (number of viewports)
-            const steps = Math.max(1, Math.ceil(scaledH / containerH));
+            const steps = Math.max(1, Math.ceil(effectiveScaledH / containerH));
 
             // Generate keyframes for incremental scroll
             let kfs = `@keyframes scrollWebSnap {`;
@@ -38,7 +62,7 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
             for (let i = 0; i < steps; i++) {
                 const startPause = i * stepPercent;
                 const endPause = (i + 1) * stepPercent - (i === steps - 1 ? 0 : transitionPercent);
-                const pos = Math.min(i * containerH, totalOverflow);
+                const pos = Math.min(offsetPx + (i * containerH), scaledH - containerH);
 
                 kfs += `\n  ${startPause.toFixed(2)}%, ${endPause.toFixed(2)}% { transform: translateY(-${pos}px); }`;
             }
@@ -49,34 +73,76 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
         }
     };
 
+    const cropStyle: React.CSSProperties = (vWidth || vHeight) ? {
+        width: vWidth ? `${vWidth}px` : '98%',
+        height: vHeight ? `${vHeight}px` : '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        border: (vWidth || vHeight) ? '1px solid rgba(255,255,255,0.1)' : 'none',
+        backgroundColor: 'black'
+    } : {
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden'
+    };
+
     if (!scrollNeeded) {
+        let offsetPx = 0;
+        if (cropOffsetY && imgRef.current) {
+            const containerW = containerRef.current?.clientWidth || 0;
+            const targetW = containerW * 0.98;
+            const scaledH = (imgRef.current.naturalHeight / imgRef.current.naturalWidth) * targetW;
+
+            if (cropOffsetY.endsWith('%')) {
+                offsetPx = (parseFloat(cropOffsetY) / 100) * scaledH;
+            } else {
+                offsetPx = parseFloat(cropOffsetY);
+            }
+        }
+
         return (
             <div ref={containerRef} className="w-full h-full flex items-center justify-center">
-                <img
-                    ref={imgRef}
-                    src={src}
-                    onLoad={handleLoad}
-                    className={`max-w-[98%] max-h-full animate-in fade-in duration-1000 ${scaleMode === 'contain' ? 'object-contain' : 'object-cover'}`}
-                    alt=""
-                />
+                <div style={cropStyle}>
+                    <img
+                        ref={imgRef}
+                        src={src}
+                        onLoad={handleLoad}
+                        className={`animate-in fade-in duration-1000 ${scaleMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+                        style={{
+                            width: '100%',
+                            position: 'absolute',
+                            top: -offsetPx,
+                            left: 0
+                        }}
+                        alt=""
+                    />
+                </div>
             </div>
         );
     }
 
     return (
-        <div ref={containerRef} className="w-full h-full overflow-hidden flex flex-col items-center">
-            <img
-                ref={imgRef}
-                src={src}
-                onLoad={handleLoad}
-                alt=""
-                className="animate-in fade-in duration-1000"
-                style={{
-                    width: '98%',
-                    display: 'block',
-                    animation: `scrollWebSnap ${durationSec}s linear forwards`,
-                }}
-            />
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center">
+            <div style={cropStyle}>
+                <img
+                    ref={imgRef}
+                    src={src}
+                    onLoad={handleLoad}
+                    alt=""
+                    className="animate-in fade-in duration-1000"
+                    style={{
+                        width: '100%',
+                        display: 'block',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        animation: `scrollWebSnap ${durationSec}s linear forwards`,
+                    }}
+                />
+            </div>
             {keyframeStyle && <style>{keyframeStyle}</style>}
         </div>
     );
@@ -676,7 +742,16 @@ const Player: React.FC = () => {
                 );
             case 'webpage':
                 if (currentSlide.render_webpage && currentSlide.thumbnail_url) {
-                    return <ScrollingWebImage src={currentSlide.thumbnail_url} durationSec={slideDuration} scaleMode={currentSlide.scale_mode} />;
+                    return (
+                        <ScrollingWebImage
+                            src={currentSlide.thumbnail_url}
+                            durationSec={slideDuration}
+                            scaleMode={currentSlide.scale_mode}
+                            vWidth={data.width}
+                            vHeight={data.height}
+                            cropOffsetY={data.crop_offset_y}
+                        />
+                    );
                 }
                 return <iframe src={resolvedUrl} className="w-full h-full border-none animate-in fade-in duration-1000" title="web-slide" />;
             case 'table':

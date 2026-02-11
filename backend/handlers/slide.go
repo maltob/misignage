@@ -57,6 +57,9 @@ func CreateSlide(c echo.Context) error {
 				contentMap["height"] = val
 			}
 		}
+		if oy := c.FormValue("crop_offset_y"); oy != "" {
+			contentMap["crop_offset_y"] = oy
+		}
 
 		jsonContent, _ := json.Marshal(contentMap)
 		content = string(jsonContent)
@@ -205,9 +208,10 @@ func UpdateSlide(c echo.Context) error {
 		rawContent := c.FormValue("content")
 		vw := c.FormValue("viewport_width")
 		vh := c.FormValue("viewport_height")
+		oy := c.FormValue("crop_offset_y")
 
 		// If explicit content is provided OR viewport settings changed for webpage
-		if rawContent != "" || (slide.Type == "webpage" && (vw != "" || vh != "")) {
+		if rawContent != "" || (slide.Type == "webpage" && (vw != "" || vh != "" || oy != "")) {
 			var newContent string
 
 			if slide.Type == "webpage" {
@@ -235,6 +239,9 @@ func UpdateSlide(c echo.Context) error {
 					if val, err := strconv.Atoi(vh); err == nil {
 						contentMap["height"] = val
 					}
+				}
+				if oy != "" {
+					contentMap["crop_offset_y"] = oy
 				}
 
 				jsonContent, _ := json.Marshal(contentMap)

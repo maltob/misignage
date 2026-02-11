@@ -35,6 +35,10 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
     const [renderInterval, setRenderInterval] = useState(editSlide?.render_interval || 0);
     const [renderDelay, setRenderDelay] = useState(editSlide?.render_delay || 0);
     const [webScript, setWebScript] = useState(editSlide?.web_script || '');
+    const [enableCropping, setEnableCropping] = useState(false);
+    const [viewportWidth, setViewportWidth] = useState(0);
+    const [viewportHeight, setViewportHeight] = useState(0);
+    const [cropOffsetY, setCropOffsetY] = useState('0');
     const [groups, setGroups] = useState<any[]>([]);
     const [targetGroupIds, setTargetGroupIds] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
@@ -85,6 +89,18 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                     try {
                         const data = JSON.parse(editSlide.content);
                         setContent(data.url || editSlide.content);
+                        if (data.width) {
+                            setViewportWidth(data.width);
+                            setEnableCropping(true);
+                        }
+                        if (data.height) {
+                            setViewportHeight(data.height);
+                            setEnableCropping(true);
+                        }
+                        if (data.crop_offset_y) {
+                            setCropOffsetY(data.crop_offset_y);
+                            setEnableCropping(true);
+                        }
                     } catch (e) {
                         setContent(editSlide.content);
                     }
@@ -199,7 +215,11 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                 formData.append('render_interval', String(renderInterval));
                 formData.append('render_delay', String(renderDelay));
                 formData.append('web_script', webScript);
-                formData.append('web_script', webScript);
+                if (enableCropping) {
+                    formData.append('viewport_width', String(viewportWidth));
+                    formData.append('viewport_height', String(viewportHeight));
+                    formData.append('crop_offset_y', cropOffsetY);
+                }
             }
         }
 
@@ -407,6 +427,52 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                                                 </div>
 
 
+
+                                                <div className="flex items-center justify-between p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Enable Cropping</span>
+                                                        <span className="text-[8px] text-slate-500 uppercase tracking-tighter">Define a custom viewport window</span>
+                                                    </div>
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" checked={enableCropping} onChange={(e) => setEnableCropping(e.target.checked)} className="sr-only peer" />
+                                                        <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                                    </label>
+                                                </div>
+
+                                                {enableCropping && (
+                                                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Viewport Size (0=None)</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={viewportWidth}
+                                                                    onChange={(e) => setViewportWidth(Number(e.target.value))}
+                                                                    className="w-full input-field py-2 text-xs"
+                                                                    placeholder="Width"
+                                                                />
+                                                                <span className="text-slate-500">x</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={viewportHeight}
+                                                                    onChange={(e) => setViewportHeight(Number(e.target.value))}
+                                                                    className="w-full input-field py-2 text-xs"
+                                                                    placeholder="Height"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Top Offset (px or %)</label>
+                                                            <input
+                                                                type="text"
+                                                                value={cropOffsetY}
+                                                                onChange={(e) => setCropOffsetY(e.target.value)}
+                                                                className="w-full input-field py-2 text-xs"
+                                                                placeholder="e.g. 100 or 5%"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.script')}</label>
