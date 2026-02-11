@@ -532,6 +532,7 @@
             "refresh_interval": "Интервал обновления (мин)",
             "json_path": "JSON путь (gjson)",
             "css_selector": "CSS селектор",
+            "method_image": "Изображение (Base64)",
             "save_changes": "Сохранить изменения",
             "create_variable": "Создать переменную"
         }

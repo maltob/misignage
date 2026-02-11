@@ -65,6 +65,12 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
         if (isOpen) {
             fetchGroups();
             fetchTemplates();
+            // Reset generic states
+            setEnableCropping(false);
+            setViewportWidth(0);
+            setViewportHeight(0);
+            setCropOffsetY('0');
+
             if (editSlide) {
                 setType(editSlide.type as any);
                 setScaleMode(editSlide.scale_mode as any || 'contain');
@@ -89,18 +95,20 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                     try {
                         const data = JSON.parse(editSlide.content);
                         setContent(data.url || editSlide.content);
+                        let shouldEnableCrop = false;
                         if (data.width) {
                             setViewportWidth(data.width);
-                            setEnableCropping(true);
+                            shouldEnableCrop = true;
                         }
                         if (data.height) {
                             setViewportHeight(data.height);
-                            setEnableCropping(true);
+                            shouldEnableCrop = true;
                         }
                         if (data.crop_offset_y) {
                             setCropOffsetY(data.crop_offset_y);
-                            setEnableCropping(true);
+                            if (data.crop_offset_y !== '0') shouldEnableCrop = true;
                         }
+                        if (shouldEnableCrop) setEnableCropping(true);
                     } catch (e) {
                         setContent(editSlide.content);
                     }
@@ -219,6 +227,10 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                     formData.append('viewport_width', String(viewportWidth));
                     formData.append('viewport_height', String(viewportHeight));
                     formData.append('crop_offset_y', cropOffsetY);
+                } else {
+                    formData.append('viewport_width', '0');
+                    formData.append('viewport_height', '0');
+                    formData.append('crop_offset_y', '0');
                 }
             }
         }

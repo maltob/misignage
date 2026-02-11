@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -175,6 +177,52 @@ func fetchVariableValue(sv *models.SharedVariable) (string, error) {
 		result := gjson.GetBytes(bodyBytes, sv.ExtractionConfig)
 		// We return string representation
 		return result.String(), nil
+	} else if sv.ExtractionMethod == "image" {
+		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyBytes))
+		if err != nil {
+			return "", err
+		}
+
+		selection := doc.Find(sv.ExtractionConfig)
+		if selection.Length() == 0 {
+			return "", fmt.Errorf("selector '%s' found no elements", sv.ExtractionConfig)
+		}
+
+		src, exists := selection.First().Attr("src")
+		if !exists {
+			return "", fmt.Errorf("element has no src attribute")
+		}
+
+		// Resolve relative URL
+		baseURL, err := url.Parse(sv.SourceURL)
+		if err != nil {
+			return "", fmt.Errorf("invalid source URL: %v", err)
+		}
+		imgURL, err := baseURL.Parse(src)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve image URL: %v", err)
+		}
+
+		// Fetch image
+		imgResp, err := client.Get(imgURL.String())
+		if err != nil {
+			return "", fmt.Errorf("failed to fetch image: %v", err)
+		}
+		defer imgResp.Body.Close()
+
+		if imgResp.StatusCode < 200 || imgResp.StatusCode >= 300 {
+			return "", fmt.Errorf("image fetch status %d", imgResp.StatusCode)
+		}
+
+		imgBytes, err := io.ReadAll(imgResp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		mimeType := http.DetectContentType(imgBytes)
+		b64 := base64.StdEncoding.EncodeToString(imgBytes)
+
+		return fmt.Sprintf("data:%s;base64,%s", mimeType, b64), nil
 	} else {
 		// Assume HTML/Webpage
 		if sv.ExtractionConfig == "" {

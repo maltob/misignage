@@ -91,8 +91,8 @@ const SharedVariablesManager: React.FC = () => {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-1 text-premium-glow">{t('shared_variables.title')}</h3>
-                    <p className="text-slate-400">{t('shared_variables.subtitle')}</p>
+                    <h3 className="text-2xl font-bold text-[var(--text-main)] mb-1 text-premium-glow">{t('shared_variables.title')}</h3>
+                    <p className="text-[var(--text-muted)]">{t('shared_variables.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => { resetForm(); setIsModalOpen(true); }}
@@ -106,7 +106,7 @@ const SharedVariablesManager: React.FC = () => {
             <div className="glass-card overflow-hidden">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <tr className="border-b border-[var(--border-subtle)] bg-[var(--sidebar-hover)] text-[10px] font-black uppercase tracking-widest text-slate-500">
                             <th className="px-6 py-4">{t('shared_variables.table.name')}</th>
                             <th className="px-6 py-4">{t('shared_variables.table.value')}</th>
                             <th className="px-6 py-4">{t('shared_variables.table.source')}</th>
@@ -114,22 +114,22 @@ const SharedVariablesManager: React.FC = () => {
                             <th className="px-6 py-4 text-right">{t('shared_variables.table.actions')}</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-[var(--border-subtle)]">
                         {variables.map(v => (
-                            <tr key={v.id} className="group hover:bg-white/5 transition-colors">
+                            <tr key={v.id} className="group hover:bg-[var(--sidebar-hover)] transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                                             <Database size={14} />
                                         </div>
                                         <div>
-                                            <span className="font-bold text-white text-sm block">{v.name}</span>
+                                            <span className="font-bold text-[var(--text-main)] text-sm block">{v.name}</span>
                                             <code className="text-[10px] text-slate-500">{`{{SHARED:${v.name}}}`}</code>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="max-w-xs truncate text-sm text-slate-300 font-mono" title={v.value}>
+                                    <div className="max-w-xs truncate text-sm text-[var(--text-muted)] font-mono" title={v.value}>
                                         {v.value}
                                     </div>
                                 </td>
@@ -152,7 +152,7 @@ const SharedVariablesManager: React.FC = () => {
                                             <button
                                                 onClick={() => handleRefresh(v.id)}
                                                 disabled={refreshingId === v.id}
-                                                className={`p-2 text-slate-500 hover:text-white hover:bg-white/10 rounded-lg transition-all ${refreshingId === v.id ? 'animate-spin text-indigo-400' : ''}`}
+                                                className={`p-2 text-slate-500 hover:text-[var(--text-main)] hover:bg-[var(--sidebar-hover)] rounded-lg transition-all ${refreshingId === v.id ? 'animate-spin text-indigo-400' : ''}`}
                                                 title={t('shared_variables.refresh_now')}
                                             >
                                                 <RotateCw size={18} />
@@ -160,7 +160,7 @@ const SharedVariablesManager: React.FC = () => {
                                         )}
                                         <button
                                             onClick={() => openEdit(v)}
-                                            className="p-2 text-slate-500 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                                            className="p-2 text-slate-500 hover:text-[var(--text-main)] hover:bg-[var(--sidebar-hover)] rounded-lg transition-all"
                                         >
                                             <Edit2 size={18} />
                                         </button>
@@ -180,23 +180,23 @@ const SharedVariablesManager: React.FC = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-                    <div className="modal-card w-full max-w-xl overflow-hidden animate-in zoom-in duration-200">
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-900/50 text-white">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="modal-card w-full max-w-xl overflow-hidden animate-in zoom-in duration-200" style={{ backgroundColor: 'var(--bg-modal)' }}>
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--sidebar-hover)] text-[var(--text-main)]">
                             <h4 className="text-xl font-bold">{editingId ? t('shared_variables.modal.edit_title') : t('shared_variables.modal.new_title')}</h4>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/5 rounded-full text-slate-400 transition-all">
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-[var(--sidebar-hover)] rounded-full text-slate-400 transition-all">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-6 bg-slate-800/20 max-h-[80vh] overflow-y-auto">
+                        <div className="p-8 space-y-6 bg-transparent max-h-[80vh] overflow-y-auto">
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">{t('shared_variables.modal.name_label')}</label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all"
+                                    className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all"
                                     placeholder="e.g. CurrentUserCount"
                                 />
                                 <p className="text-xs text-slate-500 ml-1">{t('shared_variables.modal.usage_hint', { code: `{{SHARED:${formData.name || 'Name'}}}` })}</p>
@@ -209,7 +209,7 @@ const SharedVariablesManager: React.FC = () => {
                                         <button
                                             key={type}
                                             onClick={() => setFormData({ ...formData, source_type: type })}
-                                            className={`px-4 py-3 rounded-xl border border-white/5 text-sm font-bold capitalize transition-all ${formData.source_type === type ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+                                            className={`px-4 py-3 rounded-xl border border-[var(--border-subtle)] text-sm font-bold capitalize transition-all ${formData.source_type === type ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-[var(--sidebar-hover)] text-slate-400 hover:bg-[var(--bg-main)]'}`}
                                         >
                                             {type}
                                         </button>
@@ -223,7 +223,7 @@ const SharedVariablesManager: React.FC = () => {
                                     <textarea
                                         value={formData.value}
                                         onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all min-h-[100px]"
+                                        className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all min-h-[100px]"
                                         placeholder={t('shared_variables.modal.value_placeholder')}
                                     />
                                 </div>
@@ -235,7 +235,7 @@ const SharedVariablesManager: React.FC = () => {
                                             type="text"
                                             value={formData.source_url}
                                             onChange={(e) => setFormData({ ...formData, source_url: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all"
+                                            className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all"
                                             placeholder="https://example.com/api/data"
                                         />
                                     </div>
@@ -246,10 +246,11 @@ const SharedVariablesManager: React.FC = () => {
                                             <select
                                                 value={formData.extraction_method}
                                                 onChange={(e) => setFormData({ ...formData, extraction_method: e.target.value })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all appearance-none"
+                                                className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all appearance-none"
                                             >
                                                 <option value="text">Text (Selector)</option>
                                                 <option value="json">JSON (Path)</option>
+                                                <option value="image">{t('shared_variables.modal.method_image')}</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">
@@ -258,7 +259,7 @@ const SharedVariablesManager: React.FC = () => {
                                                 type="number"
                                                 value={formData.refresh_interval}
                                                 onChange={(e) => setFormData({ ...formData, refresh_interval: parseInt(e.target.value) || 60 })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all"
+                                                className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all"
                                             />
                                         </div>
                                     </div>
@@ -271,7 +272,7 @@ const SharedVariablesManager: React.FC = () => {
                                             type="text"
                                             value={formData.extraction_config}
                                             onChange={(e) => setFormData({ ...formData, extraction_config: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-all"
+                                            className="w-full bg-[var(--input-bg)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-main)] outline-none focus:border-indigo-500 transition-all"
                                             placeholder={formData.extraction_method === 'json' ? 'e.g. data.items.0.name' : 'e.g. #content > h1'}
                                         />
                                     </div>

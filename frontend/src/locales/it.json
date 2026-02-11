@@ -532,6 +532,7 @@
             "refresh_interval": "Intervallo Aggiornamento (min)",
             "json_path": "Percorso JSON (gjson)",
             "css_selector": "Selettore CSS",
+            "method_image": "Immagine (Base64)",
             "save_changes": "Salva Modifiche",
             "create_variable": "Crea Variabile"
         }

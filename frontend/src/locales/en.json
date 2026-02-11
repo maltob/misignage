@@ -532,6 +532,7 @@
             "refresh_interval": "Refresh Interval (min)",
             "json_path": "JSON Path (gjson)",
             "css_selector": "CSS Selector",
+            "method_image": "Image (Base64)",
             "save_changes": "Save Changes",
             "create_variable": "Create Variable"
         }
