@@ -162,6 +162,13 @@ func main() {
 	api.GET("/poll", handlers.HandlePoll)
 	api.GET("/logs", handlers.GetSystemLogs)
 
+	// Shared Variables
+	api.GET("/shared-variables", handlers.GetSharedVariables)
+	api.POST("/shared-variables", handlers.CreateSharedVariable)
+	api.PUT("/shared-variables/:id", handlers.UpdateSharedVariable)
+	api.DELETE("/shared-variables/:id", handlers.DeleteSharedVariable)
+	api.POST("/shared-variables/:id/refresh", handlers.TriggerRefreshSharedVariable)
+
 	// Screenshare
 	api.POST("/screenshare/direct", handlers.DirectJoinScreenshare)
 	api.GET("/screenshare/code", handlers.RequestPairingCode)

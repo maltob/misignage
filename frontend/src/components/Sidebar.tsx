@@ -1,4 +1,5 @@
 import React from 'react';
+import { Database } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -48,6 +49,7 @@ const Sidebar: React.FC = () => {
         { id: 'settings', icon: Settings, label: t('common.settings'), path: '/settings' },
         { id: 'logs', icon: Terminal, label: t('common.logs'), path: '/logs' },
         { id: 'apikeys', icon: Key, label: t('common.apikeys'), path: '/apikeys' },
+        { id: 'variables', icon: Database, label: t('common.shared_variables'), path: '/variables' },
         { id: 'docs', icon: FileText, label: t('common.docs'), path: 'external', url: '/docs' },
     ];
 

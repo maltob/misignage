@@ -37,6 +37,9 @@ func InitWorker() {
 		}
 	}()
 
+	// Start Variable Refresher
+	StartVariableRefreshWorker()
+
 	// Periodic scanner for re-rendering webpages
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)

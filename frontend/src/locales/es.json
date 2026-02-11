@@ -29,7 +29,8 @@
         "logs": "Registros del sistema",
         "apikeys": "Claves API",
         "powered_by": "Desarrollado por miSignage",
-        "seconds_short": "s"
+        "seconds_short": "s",
+        "shared_variables": "Variables Compartidas"
     },
     "dashboard": {
         "welcome": "Bienvenido a miSignage",
@@ -504,5 +505,35 @@
         "no_results": "No se encontraron diapositivas que coincidan con su búsqueda.",
         "viewing_playlist": "Viendo lista de reproducción",
         "back_to_top": "Volver arriba"
+    },
+    "shared_variables": {
+        "title": "Variables Compartidas",
+        "subtitle": "Gestione variables que se pueden usar en todas sus diapositivas.",
+        "new_variable": "Nueva Variable",
+        "refresh_now": "Actualizar ahora",
+        "table": {
+            "name": "Nombre",
+            "value": "Valor",
+            "source": "Fuente",
+            "last_refreshed": "Última actualización",
+            "actions": "Acciones",
+            "never": "Nunca"
+        },
+        "modal": {
+            "edit_title": "Editar Variable",
+            "new_title": "Nueva Variable",
+            "name_label": "Nombre de la Variable",
+            "usage_hint": "Usar como {{code}} en plantillas.",
+            "source_type": "Tipo de Fuente",
+            "value_label": "Valor",
+            "value_placeholder": "Ingrese texto estático...",
+            "source_url": "URL de la Fuente",
+            "extraction_method": "Método de Extracción",
+            "refresh_interval": "Intervalo de Actualización (min)",
+            "json_path": "Ruta JSON (gjson)",
+            "css_selector": "Selector CSS",
+            "save_changes": "Guardar Cambios",
+            "create_variable": "Crear Variable"
+        }
     }
 }

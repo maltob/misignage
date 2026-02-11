@@ -29,7 +29,8 @@
         "logs": "Log di sistema",
         "apikeys": "Chiavi API",
         "powered_by": "Fornito da miSignage",
-        "seconds_short": "s"
+        "seconds_short": "s",
+        "shared_variables": "Variabili Condivise"
     },
     "dashboard": {
         "welcome": "Benvenuto in miSignage",
@@ -504,5 +505,35 @@
         "no_results": "Nessuna slide trovata per la tua ricerca.",
         "viewing_playlist": "Visualizzazione Playlist",
         "back_to_top": "Torna Su"
+    },
+    "shared_variables": {
+        "title": "Variabili Condivise",
+        "subtitle": "Gestisci variabili utilizzabili in tutte le tue slide.",
+        "new_variable": "Nuova Variabile",
+        "refresh_now": "Aggiorna ora",
+        "table": {
+            "name": "Nome",
+            "value": "Valore",
+            "source": "Sorgente",
+            "last_refreshed": "Ultimo Aggiornamento",
+            "actions": "Azioni",
+            "never": "Mai"
+        },
+        "modal": {
+            "edit_title": "Modifica Variabile",
+            "new_title": "Nuova Variabile",
+            "name_label": "Nome Variabile",
+            "usage_hint": "Usa come {{code}} nei template.",
+            "source_type": "Tipo Sorgente",
+            "value_label": "Valore",
+            "value_placeholder": "Inserisci testo statico...",
+            "source_url": "URL Sorgente",
+            "extraction_method": "Metodo di Estrazione",
+            "refresh_interval": "Intervallo Aggiornamento (min)",
+            "json_path": "Percorso JSON (gjson)",
+            "css_selector": "Selettore CSS",
+            "save_changes": "Salva Modifiche",
+            "create_variable": "Crea Variabile"
+        }
     }
 }

@@ -1,6 +1,7 @@
 {
     "common": {
         "administration": "Administration",
+        "shared_variables": "Shared Variables",
         "dashboard": "Dashboard",
         "back": "Back",
         "displays": "Displays",
@@ -504,5 +505,35 @@
         "no_results": "No slides found matching your search.",
         "viewing_playlist": "Viewing Playlist",
         "back_to_top": "Back to Top"
+    },
+    "shared_variables": {
+        "title": "Shared Variables",
+        "subtitle": "Manage variables that can be used across your slides.",
+        "new_variable": "New Variable",
+        "refresh_now": "Refresh Now",
+        "table": {
+            "name": "Name",
+            "value": "Value",
+            "source": "Source",
+            "last_refreshed": "Last Refreshed",
+            "actions": "Actions",
+            "never": "Never"
+        },
+        "modal": {
+            "edit_title": "Edit Variable",
+            "new_title": "New Variable",
+            "name_label": "Variable Name",
+            "usage_hint": "Use as {{code}} in templates.",
+            "source_type": "Source Type",
+            "value_label": "Value",
+            "value_placeholder": "Enter static text...",
+            "source_url": "Source URL",
+            "extraction_method": "Extraction Method",
+            "refresh_interval": "Refresh Interval (min)",
+            "json_path": "JSON Path (gjson)",
+            "css_selector": "CSS Selector",
+            "save_changes": "Save Changes",
+            "create_variable": "Create Variable"
+        }
     }
 }

@@ -29,7 +29,8 @@
         "logs": "Systemprotokolle",
         "apikeys": "API-Schlüssel",
         "powered_by": "Unterstützt von miSignage",
-        "seconds_short": "s"
+        "seconds_short": "s",
+        "shared_variables": "Geteilte Variablen"
     },
     "dashboard": {
         "welcome": "Willkommen bei miSignage",
@@ -504,5 +505,35 @@
         "no_results": "Keine Slides passend zu Ihrer Suche gefunden.",
         "viewing_playlist": "Playlist ansehen",
         "back_to_top": "Nach oben"
+    },
+    "shared_variables": {
+        "title": "Geteilte Variablen",
+        "subtitle": "Verwalten Sie Variablen, die slide-übergreifend genutzt werden können.",
+        "new_variable": "Neue Variable",
+        "refresh_now": "Jetzt aktualisieren",
+        "table": {
+            "name": "Name",
+            "value": "Wert",
+            "source": "Quelle",
+            "last_refreshed": "Zuletzt aktualisiert",
+            "actions": "Aktionen",
+            "never": "Nie"
+        },
+        "modal": {
+            "edit_title": "Variable bearbeiten",
+            "new_title": "Neue Variable",
+            "name_label": "Variablenname",
+            "usage_hint": "Verwenden als {{code}} in Vorlagen.",
+            "source_type": "Quelltyp",
+            "value_label": "Wert",
+            "value_placeholder": "Statischen Text eingeben...",
+            "source_url": "Quell-URL",
+            "extraction_method": "Extraktionsmethode",
+            "refresh_interval": "Aktualisierungsintervall (min)",
+            "json_path": "JSON-Pfad (gjson)",
+            "css_selector": "CSS-Selektor",
+            "save_changes": "Änderungen speichern",
+            "create_variable": "Variable erstellen"
+        }
     }
 }

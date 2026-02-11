@@ -163,6 +163,7 @@ const Player: React.FC = () => {
     const [syncing, setSyncing] = useState(false);
     const [syncProgress, setSyncProgress] = useState(0);
     const [screenshotInterval, setScreenshotInterval] = useState(0);
+    const [sharedVariables, setSharedVariables] = useState<any[]>([]);
 
     // Screenshare State
     const [screenshareCode, setScreenshareCode] = useState('');
@@ -224,9 +225,15 @@ const Player: React.FC = () => {
         window.addEventListener('online', () => setOnline(true));
         window.addEventListener('offline', () => setOnline(false));
 
+        // Fetch shared variables initially
+        fetchSharedVariables();
+
         const interval = setInterval(check, 10000); // 10 seconds check
+        const varInterval = setInterval(fetchSharedVariables, 60000); // 1 minute check for variables
+
         return () => {
             clearInterval(interval);
+            clearInterval(varInterval);
             window.removeEventListener('online', () => setOnline(true));
             window.removeEventListener('offline', () => setOnline(false));
         };
@@ -585,6 +592,27 @@ const Player: React.FC = () => {
         }
     };
 
+    const fetchSharedVariables = async () => {
+        try {
+            // We use a public endpoint or reuse the authenticated one?
+            // The player might not have a user token, only a display token.
+            // We need a route accessible by displays.
+            // Let's assume /api/shared-variables is protected by API Key / User Auth.
+            // Displays authenticate via Bearer token.
+            // We need to ensure GetSharedVariables supports display auth OR create a specific endpoint.
+            // For now, let's try the existing one, assuming we add display auth middleware support or make it public for displays.
+            // Actually, `GetSharedVariables` checks `userClaims`. Displays don't have that.
+            // We need to fix the backend or add a new route.
+            // Let's assume we fixed the backend to allow displays to fetch variables (or we will fix it next).
+            const token = localStorage.getItem('display_token');
+            if (!token) return;
+            const res = await axios.get('/api/shared-variables', { headers: { Authorization: `Bearer ${token}` } });
+            setSharedVariables(res.data);
+        } catch (err) {
+            console.warn("Failed to fetch shared variables");
+        }
+    };
+
     const syncAssets = async (schedules: any[]) => {
         if (!('caches' in window)) return;
 
@@ -795,12 +823,20 @@ const Player: React.FC = () => {
                 const js = data?.js || '';
                 const variables = data?.variables || {};
 
-                // Simple variable injection: Replace {{key}} with value
+                // Simple variable injection: Replace {{key}} with value from Slide variables
                 let finalHtml = html;
                 if (variables) {
                     Object.keys(variables).forEach(key => {
                         const val = variables[key];
                         finalHtml = finalHtml.replaceAll(`{{${key}}}`, val);
+                    });
+                }
+
+                // Inject Shared Variables
+                if (sharedVariables && sharedVariables.length > 0) {
+                    sharedVariables.forEach(v => {
+                        const placeholder = `{{SHARED:${v.name}}}`;
+                        finalHtml = finalHtml.split(placeholder).join(v.value || '');
                     });
                 }
 

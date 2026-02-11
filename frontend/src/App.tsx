@@ -16,6 +16,7 @@ import SettingsManager from './views/SettingsManager';
 import SystemLogs from './views/SystemLogs';
 import TemplateManager from './views/TemplateManager';
 import APIKeyManager from './views/APIKeyManager';
+import SharedVariablesManager from './views/SharedVariablesManager';
 import ContributorShare from './views/ContributorShare';
 import PublicPlaylistView from './views/PublicPlaylistView';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -130,6 +131,7 @@ const AppContent: React.FC = () => {
             <Route path="/storage" element={<DashboardLayout><StorageManager /></DashboardLayout>} />
             <Route path="/templates" element={<DashboardLayout><TemplateManager /></DashboardLayout>} />
             <Route path="/apikeys" element={<DashboardLayout><APIKeyManager /></DashboardLayout>} />
+            <Route path="/variables" element={<DashboardLayout><SharedVariablesManager /></DashboardLayout>} />
             <Route path="/users" element={<DashboardLayout><UserManager /></DashboardLayout>} />
             <Route path="/settings" element={<DashboardLayout><SettingsManager /></DashboardLayout>} />
             <Route path="/logs" element={<DashboardLayout><SystemLogs /></DashboardLayout>} />

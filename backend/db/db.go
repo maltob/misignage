@@ -39,7 +39,7 @@ func InitDB() {
 		&models.Organization{},
 		&models.User{}, &models.Group{}, &models.SlideTemplate{}, &models.Display{}, &models.Slide{},
 		&models.Playlist{}, &models.PlaylistSlide{}, &models.Schedule{}, &models.SystemLog{},
-		&models.APIKey{}, &models.ScreenshareSession{},
+		&models.APIKey{}, &models.ScreenshareSession{}, &models.SharedVariable{},
 	)
 
 	if err != nil {

@@ -29,7 +29,8 @@
         "logs": "Системные логи",
         "apikeys": "API Ключи",
         "powered_by": "Работает на miSignage",
-        "seconds_short": "с"
+        "seconds_short": "с",
+        "shared_variables": "Общие Переменные"
     },
     "dashboard": {
         "welcome": "Добро пожаловать в miSignage",
@@ -504,5 +505,35 @@
         "no_results": "Слайды не найдены.",
         "viewing_playlist": "Просмотр плейлиста",
         "back_to_top": "Наверх"
+    },
+    "shared_variables": {
+        "title": "Общие Переменные",
+        "subtitle": "Управление переменными, доступными во всех слайдах.",
+        "new_variable": "Новая переменная",
+        "refresh_now": "Обновить сейчас",
+        "table": {
+            "name": "Имя",
+            "value": "Значение",
+            "source": "Источник",
+            "last_refreshed": "Обновлено",
+            "actions": "Действия",
+            "never": "Никогда"
+        },
+        "modal": {
+            "edit_title": "Изменить переменную",
+            "new_title": "Новая переменная",
+            "name_label": "Имя переменной",
+            "usage_hint": "Используйте как {{code}} в шаблонах.",
+            "source_type": "Тип источника",
+            "value_label": "Значение",
+            "value_placeholder": "Введите статический текст...",
+            "source_url": "URL источника",
+            "extraction_method": "Метод извлечения",
+            "refresh_interval": "Интервал обновления (мин)",
+            "json_path": "JSON путь (gjson)",
+            "css_selector": "CSS селектор",
+            "save_changes": "Сохранить изменения",
+            "create_variable": "Создать переменную"
+        }
     }
 }
