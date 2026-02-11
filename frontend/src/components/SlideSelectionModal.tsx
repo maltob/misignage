@@ -60,7 +60,7 @@ const SlideSelectionModal: React.FC<SlideSelectionModalProps> = ({ isOpen, onClo
                             placeholder={t('modals.slide_selection.search_placeholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full input-field py-3.5 pl-12 pr-4 text-[var(--text-main)] font-bold border-2 border-[var(--border-subtle)] bg-[var(--input-bg)]"
+                            className="w-full input-field py-3.5 pl-14 pr-4 text-[var(--text-main)] font-bold border-2 border-[var(--border-subtle)] bg-[var(--input-bg)]"
                             autoFocus
                         />
                     </div>

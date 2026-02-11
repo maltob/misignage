@@ -20,6 +20,12 @@ func CreatePlaylist(c echo.Context) error {
 	if err := c.Bind(playlist); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
+
+	// Fallback for FormData submissions which Bind (JSON-oriented) might miss
+	if playlist.Name == "" {
+		playlist.Name = c.FormValue("name")
+	}
+
 	playlist.OrganizationID = user.OrganizationID
 
 	if playlist.IsPublic && playlist.PublicSlug == "" {

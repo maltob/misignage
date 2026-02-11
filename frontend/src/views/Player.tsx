@@ -9,7 +9,7 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
     const [scrollNeeded, setScrollNeeded] = useState(false);
-    const [overflowPx, setOverflowPx] = useState(0);
+    const [keyframeStyle, setKeyframeStyle] = useState("");
 
     const handleLoad = () => {
         const img = imgRef.current;
@@ -18,11 +18,32 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
 
         const containerW = container.clientWidth;
         const containerH = container.clientHeight;
-        const scaledH = (img.naturalHeight / img.naturalWidth) * containerW;
 
-        if (scaledH > containerH * 1.1) {
+        // Use 98% width to reduce the "zoomed in" feel
+        const targetW = containerW * 0.98;
+        const scaledH = (img.naturalHeight / img.naturalWidth) * targetW;
+
+        if (scaledH > containerH * 1.05) {
             setScrollNeeded(true);
-            setOverflowPx(scaledH - containerH);
+            const totalOverflow = scaledH - containerH;
+
+            // Calculate steps (number of viewports)
+            const steps = Math.max(1, Math.ceil(scaledH / containerH));
+
+            // Generate keyframes for incremental scroll
+            let kfs = `@keyframes scrollWebSnap {`;
+            const stepPercent = 100 / steps;
+            const transitionPercent = stepPercent * 0.2; // 20% of step time for transition
+
+            for (let i = 0; i < steps; i++) {
+                const startPause = i * stepPercent;
+                const endPause = (i + 1) * stepPercent - (i === steps - 1 ? 0 : transitionPercent);
+                const pos = Math.min(i * containerH, totalOverflow);
+
+                kfs += `\n  ${startPause.toFixed(2)}%, ${endPause.toFixed(2)}% { transform: translateY(-${pos}px); }`;
+            }
+            kfs += "\n}";
+            setKeyframeStyle(kfs);
         } else {
             setScrollNeeded(false);
         }
@@ -30,12 +51,12 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
 
     if (!scrollNeeded) {
         return (
-            <div ref={containerRef} className="w-full h-full">
+            <div ref={containerRef} className="w-full h-full flex items-center justify-center">
                 <img
                     ref={imgRef}
                     src={src}
                     onLoad={handleLoad}
-                    className={`w-full h-full animate-in fade-in duration-1000 ${scaleMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+                    className={`max-w-[98%] max-h-full animate-in fade-in duration-1000 ${scaleMode === 'contain' ? 'object-contain' : 'object-cover'}`}
                     alt=""
                 />
             </div>
@@ -43,24 +64,20 @@ const ScrollingWebImage: React.FC<{ src: string; durationSec: number; scaleMode?
     }
 
     return (
-        <div ref={containerRef} className="w-full h-full overflow-hidden">
+        <div ref={containerRef} className="w-full h-full overflow-hidden flex flex-col items-center">
             <img
                 ref={imgRef}
                 src={src}
                 onLoad={handleLoad}
                 alt=""
-                className="w-full animate-in fade-in duration-1000"
+                className="animate-in fade-in duration-1000"
                 style={{
+                    width: '98%',
                     display: 'block',
                     animation: `scrollWebSnap ${durationSec}s linear forwards`,
                 }}
             />
-            <style>{`
-                @keyframes scrollWebSnap {
-                    0% { transform: translateY(0); }
-                    100% { transform: translateY(-${overflowPx}px); }
-                }
-            `}</style>
+            {keyframeStyle && <style>{keyframeStyle}</style>}
         </div>
     );
 };

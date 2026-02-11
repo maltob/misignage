@@ -80,9 +80,10 @@ const PlaylistCreationModal: React.FC<PlaylistCreationModalProps> = ({ isOpen, o
                             </div>
                             <input
                                 type="text"
+                                name="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full input-field py-3.5 pl-14 pr-4 text-lg font-bold border-2"
+                                className="w-full input-field py-3.5 pl-16 pr-4 text-lg font-bold border-2"
                                 placeholder={t('modals.playlist_creation.identity_placeholder')}
                                 required
                             />

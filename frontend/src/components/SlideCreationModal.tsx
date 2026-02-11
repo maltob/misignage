@@ -35,8 +35,6 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
     const [renderInterval, setRenderInterval] = useState(editSlide?.render_interval || 0);
     const [renderDelay, setRenderDelay] = useState(editSlide?.render_delay || 0);
     const [webScript, setWebScript] = useState(editSlide?.web_script || '');
-    const [viewportWidth, setViewportWidth] = useState(1920);
-    const [viewportHeight, setViewportHeight] = useState(1080);
     const [groups, setGroups] = useState<any[]>([]);
     const [targetGroupIds, setTargetGroupIds] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
@@ -87,8 +85,6 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                     try {
                         const data = JSON.parse(editSlide.content);
                         setContent(data.url || editSlide.content);
-                        if (data.width) setViewportWidth(data.width);
-                        if (data.height) setViewportHeight(data.height);
                     } catch (e) {
                         setContent(editSlide.content);
                     }
@@ -203,8 +199,7 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                 formData.append('render_interval', String(renderInterval));
                 formData.append('render_delay', String(renderDelay));
                 formData.append('web_script', webScript);
-                formData.append('viewport_width', String(viewportWidth));
-                formData.append('viewport_height', String(viewportHeight));
+                formData.append('web_script', webScript);
             }
         }
 
@@ -411,34 +406,7 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.viewport_size')}</label>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="relative flex-1">
-                                                                <input
-                                                                    type="number"
-                                                                    value={viewportWidth}
-                                                                    onChange={(e) => setViewportWidth(Number(e.target.value))}
-                                                                    className="w-full input-field text-sm pl-8"
-                                                                    placeholder="1920"
-                                                                />
-                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">W</span>
-                                                            </div>
-                                                            <span className="text-slate-400 font-bold">x</span>
-                                                            <div className="relative flex-1">
-                                                                <input
-                                                                    type="number"
-                                                                    value={viewportHeight}
-                                                                    onChange={(e) => setViewportHeight(Number(e.target.value))}
-                                                                    className="w-full input-field text-sm pl-8"
-                                                                    placeholder="1080"
-                                                                />
-                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">H</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+
 
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('slides.render_options.script')}</label>
