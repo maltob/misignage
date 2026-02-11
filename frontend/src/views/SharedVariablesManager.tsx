@@ -129,9 +129,26 @@ const SharedVariablesManager: React.FC = () => {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="max-w-xs truncate text-sm text-[var(--text-muted)] font-mono" title={v.value}>
-                                        {v.value}
-                                    </div>
+                                    {v.extraction_method === 'image' || v.value.startsWith('data:image') ? (
+                                        <div className="relative group/img">
+                                            <img
+                                                src={v.value}
+                                                alt={v.name}
+                                                className="h-10 w-auto rounded border border-[var(--border-subtle)] object-contain bg-[var(--bg-main)]"
+                                            />
+                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover/img:block z-50">
+                                                <img
+                                                    src={v.value}
+                                                    alt={v.name}
+                                                    className="max-h-64 max-w-xs rounded-lg border border-[var(--border-subtle)] shadow-xl bg-[var(--bg-modal)]"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="max-w-xs truncate text-sm text-[var(--text-muted)] font-mono" title={v.value}>
+                                            {v.value}
+                                        </div>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">

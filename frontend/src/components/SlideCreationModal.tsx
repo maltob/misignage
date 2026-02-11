@@ -253,8 +253,8 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="modal-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200" style={{ backgroundColor: 'var(--bg-modal)' }}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-20 bg-black/80 backdrop-blur-sm overflow-y-auto">
+            <div className="modal-card w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 shadow-2xl my-auto" style={{ backgroundColor: 'var(--bg-modal)' }}>
                 <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)] bg-[var(--sidebar-hover)]">
                     <div>
                         <h3 className="text-xl font-bold text-[var(--text-main)]">{editSlide ? t('modals.slide_creation.edit_title') : t('modals.slide_creation.create_title')}</h3>
