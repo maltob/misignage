@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { X, Upload, Globe, Type, Users, Code, Settings2, Monitor } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -252,9 +253,9 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-20 bg-black/80 backdrop-blur-sm overflow-y-auto">
-            <div className="modal-card w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 shadow-2xl my-auto" style={{ backgroundColor: 'var(--bg-modal)' }}>
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+            <div className="modal-card w-full max-w-4xl max-h-min overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 shadow-2xl my-auto" style={{ backgroundColor: 'var(--bg-modal)' }}>
                 <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)] bg-[var(--sidebar-hover)]">
                     <div>
                         <h3 className="text-xl font-bold text-[var(--text-main)]">{editSlide ? t('modals.slide_creation.edit_title') : t('modals.slide_creation.create_title')}</h3>
@@ -607,7 +608,8 @@ const SlideCreationModal: React.FC<SlideCreationModalProps> = ({ isOpen, onClose
                     </div>
                 </div>
             )}
-        </div>
+        </div>,
+        document.body
     );
 };
 
